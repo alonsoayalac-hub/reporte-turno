@@ -298,23 +298,27 @@ section.activa{min-width:0}
   filter:drop-shadow(0 10px 18px rgba(22,70,160,.16));
 }
 @media(min-width:901px){
+  /* Logo amplio debajo de los accesos rápidos, en la columna principal */
   #v-areas > .areas-logo{
-    min-height:390px;
+    grid-column:1 / span 8;
+    grid-row:4;
+    min-height:360px;
+    margin:8px 0 18px;
     padding:24px;
     display:flex;
     align-items:center;
     justify-content:center;
-    grid-column:8 / span 5;
-    grid-row:3;
   }
   #v-areas > .areas-logo img{
     display:block;
-    width:min(100%,460px);
+    width:min(100%,620px);
     max-width:100%;
-    max-height:350px;
+    max-height:320px;
     height:auto;
     object-fit:contain;
   }
+  #v-areas > .card:nth-of-type(7){grid-column:9 / span 4;grid-row:3}
+  #v-areas > .card:nth-of-type(8){grid-column:9 / span 4;grid-row:4}
 }
 @media(max-width:900px){
   .areas-logo{min-height:180px;margin:4px 0 14px}
