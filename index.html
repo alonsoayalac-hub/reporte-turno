@@ -209,6 +209,43 @@ section.activa{min-width:0}
 .reunion-item .acciones button{min-height:38px;font-size:12px;padding:7px 10px}
 #reunionContador{display:flex;justify-content:space-between;gap:8px;margin-top:6px;color:var(--muted);font-size:11px}
 #reunionEstado{min-height:20px}
+
+/* Ajustes de densidad y aprovechamiento del espacio en escritorio */
+@media(min-width:901px){
+  main{padding-top:14px;padding-bottom:104px}
+  .card{padding:17px;margin-bottom:10px;border-radius:16px}
+  .hero{padding:21px}
+  .stats{margin-bottom:0;gap:8px;align-self:start}
+  .stat{padding:12px 9px}
+  .stat strong{font-size:22px}
+  .seccion-titulo{margin:2px 2px 7px}
+  .accesos{gap:8px;margin-bottom:0}
+  .acceso{min-height:68px;padding:10px;gap:9px}
+  .acceso-icon{width:36px;height:36px}
+  #v-areas.activa{grid-template-columns:repeat(12,minmax(0,1fr));gap:10px 16px}
+  #v-areas > .hero{grid-column:1 / span 8;grid-row:1}
+  #v-areas > .stats{grid-column:9 / span 4;grid-row:1;grid-template-columns:repeat(3,minmax(0,1fr))}
+  #v-areas > .seccion-titulo:nth-of-type(1){grid-column:1 / span 8;grid-row:2}
+  #v-areas > .accesos{grid-column:1 / span 8;grid-row:3}
+  #v-areas > .seccion-titulo:nth-of-type(5){grid-column:9 / span 4;grid-row:2}
+  #v-areas > .areas-logo{grid-column:9 / span 4;grid-row:3;min-height:76px;align-self:start}
+  #v-areas > .areas-logo img{width:88px;max-height:76px}
+  #v-areas > .card:nth-of-type(7){grid-column:9 / span 4;grid-row:4}
+  #v-areas > .card:nth-of-type(8){grid-column:9 / span 4;grid-row:5}
+  #v-evento.activa{gap:0 14px}
+  #v-evento:has(#previa[hidden]) .card:first-child{grid-column:1 / -1;grid-row:1}
+  #v-evento:has(#previa[hidden]) #btnGuardarEvento,
+  #v-evento:has(#previa[hidden]) #eventoMsg{grid-column:1 / -1}
+  #v-reporte.activa{gap:0 14px}
+  #v-historial.activa{gap:0 12px}
+  #v-reuniones.activa{gap:0 14px}
+}
+@media(min-width:1200px){
+  #v-historial.activa{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:900px){
+  .card{margin-bottom:12px}
+}
 </style>
 </head>
 <body>
