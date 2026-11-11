@@ -86,9 +86,58 @@
   nav button.activo { color: var(--pri); }
   #mic.grabando { background: var(--rojo); color: #fff; }
 </style>
+
+<style>
+:root{--bg:#f3f6fb;--card:#fff;--txt:#172338;--muted:#718096;--borde:#e4eaf2;--pri:#1646a0;--pri-txt:#fff;--verde:#159765;--rojo:#d94848;--aviso:#a96508}
+@media(prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#101722;--card:#192433;--txt:#edf3fb;--muted:#9aa9bd;--borde:#2a394d;--pri:#6ea2ff;--pri-txt:#07162c;--verde:#31b982;--rojo:#ff7777;--aviso:#f2bd62}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+header{background:var(--card);color:var(--txt);border-bottom:1px solid var(--borde);padding:calc(env(safe-area-inset-top) + 12px) 18px 12px}
+.marca{max-width:760px;margin:auto;display:flex;align-items:center;gap:12px;min-height:48px}
+.marca img{width:46px;height:46px;border-radius:14px;object-fit:cover;box-shadow:0 3px 10px #0d306426}
+.marca-texto{min-width:0}header h1{margin:0;font-size:19px;line-height:1.2;font-weight:750;letter-spacing:-.025em}
+.subtitulo{margin:3px 0 0;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.09em}
+main{max-width:760px;padding:18px 16px calc(env(safe-area-inset-bottom) + 104px)}
+section.activa{animation:aparecer .18s ease-out}
+@keyframes aparecer{from{opacity:.6;transform:translateY(4px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border:1px solid var(--borde);border-radius:19px;padding:18px;margin-bottom:15px;box-shadow:0 8px 24px #1930560f}
+.card h2{margin:0 0 13px;font-size:12px;letter-spacing:.075em;text-transform:uppercase;color:var(--muted);font-weight:800}
+label{font-size:13px;font-weight:600}
+input[type=text],textarea,select,input[type=datetime-local]{width:100%;min-height:52px;font:inherit;font-size:16px;color:var(--txt);background:var(--bg);border:1px solid var(--borde);border-radius:13px;padding:13px 14px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--pri);box-shadow:0 0 0 3px color-mix(in srgb,var(--pri) 17%,transparent)}
+textarea{min-height:148px;line-height:1.5}
+button{min-height:48px;font:inherit;font-size:15px;border:0;border-radius:13px;padding:12px 16px;cursor:pointer;background:var(--pri);color:var(--pri-txt);font-weight:700;touch-action:manipulation;transition:transform .12s}
+button:active{transform:scale(.98)}
+button.sec{background:var(--bg);color:var(--pri);border:1px solid var(--borde)}
+button.verde{background:var(--verde);color:#fff}
+button.peligro{background:transparent;color:var(--rojo);padding:8px 10px;min-width:42px}
+button.mini{background:var(--bg);color:var(--muted);border:1px solid var(--borde);padding:7px 10px;min-height:40px;min-width:40px}
+button:disabled{opacity:.4}
+.fila{gap:9px}.col{gap:10px}.col button{width:100%;min-height:52px}
+.msg{font-size:13px;font-weight:600}.muted{font-size:13px;color:var(--muted)}
+ul.lista li{min-height:58px;padding:10px 0;border-top:1px solid var(--borde)}
+ul.lista .nombre{font-weight:700;overflow-wrap:anywhere}
+.vacio{padding:34px 12px;font-size:14px}
+.ev{padding:13px 0;border-top:1px solid var(--borde);align-items:flex-start}
+.ev .cuerpo{min-width:0;overflow-wrap:anywhere}.ev .fecha{font-size:11px;font-weight:650;margin-bottom:4px}
+#modal{background:#0812238f;backdrop-filter:blur(4px)}
+.modal-caja{background:var(--card);border:1px solid var(--borde);border-radius:24px 24px 0 0;padding:22px 18px calc(env(safe-area-inset-bottom) + 20px)}
+.modal-caja h2{font-size:19px}
+.seg{background:var(--card);border:1px solid var(--borde);border-radius:15px;padding:5px;gap:5px;box-shadow:0 8px 24px #1930560f}
+.seg button{min-height:46px;background:transparent;color:var(--muted)}.seg button.activo{background:var(--pri);color:var(--pri-txt)}
+pre#reporte{font-size:13px;line-height:1.65;overflow-wrap:anywhere}
+nav{background:color-mix(in srgb,var(--card) 94%,transparent);border-top:1px solid var(--borde);backdrop-filter:blur(18px);padding:7px 8px calc(env(safe-area-inset-bottom) + 5px)}
+nav button{border-radius:12px;padding:5px 2px 4px;min-height:55px;font-size:10px;font-weight:700}
+nav button span{font-size:22px;line-height:1.35;margin-bottom:1px}
+nav button.activo{color:var(--pri);background:color-mix(in srgb,var(--pri) 9%,transparent)}
+#mic.grabando{background:var(--rojo);color:#fff}
+@media(min-width:600px){.modal-caja{border-radius:22px}}
+@media(min-width:760px){main{padding-top:24px}nav{left:50%;right:auto;transform:translateX(-50%);width:min(100%,520px);bottom:12px;border:1px solid var(--borde);border-radius:18px;padding:7px;box-shadow:0 10px 32px #14233c1f}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
 </head>
 <body>
-<header><h1 id="titulo">Áreas</h1></header>
+<header><div class="marca"><img src="icon-192.png" alt="Logo de Reporte de Turno"><div class="marca-texto"><h1 id="titulo">Áreas</h1><p class="subtitulo">OPERACIONES · REPORTE DE TURNO</p></div></div></header>
 
 <main>
   <!-- ÁREAS -->
