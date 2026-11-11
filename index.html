@@ -856,9 +856,10 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     ultimoCambioLocal = Date.now();
     estadoSync('Guardando…');
     clearTimeout(guardadoPendiente);
-    guardadoPendiente = setTimeout(guardarEnNube, 650);
+    guardadoPendiente = setTimeout(() => { guardadoPendiente = null; guardarEnNube(); }, 650);
   }
   async function guardarEnNube() {
+    guardadoPendiente = null;
     if (!usuarioActual || cargandoDatos) return;
     const usuarioId = usuarioActual.id;
     const momento = new Date().toISOString();
@@ -897,6 +898,8 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     if (!session || !session.user) return;
     if (usuarioActual && usuarioActual.id === session.user.id) return;
     clearTimeout(guardadoPendiente);
+    guardadoPendiente = null;
+    ultimoCambioLocal = 0;
     if (intervaloSync) clearInterval(intervaloSync);
     usuarioActual = session.user;
     $('userEmail').textContent = session.user.email || 'Usuario';
@@ -936,6 +939,7 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
   }
   function bloquearAplicacion() {
     clearTimeout(guardadoPendiente);
+    guardadoPendiente = null;
     if (intervaloSync) clearInterval(intervaloSync);
     intervaloSync = null; usuarioActual = null;
     areas = []; eventos = []; reuniones = [];
@@ -970,7 +974,7 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
     mostrarMensajeAuth(error ? error.message : 'Si el correo está registrado, recibirás un enlace para restablecer la contraseña.', error ? 'error' : 'ok');
   });
-  $('authLogout').addEventListener('click', async () => { await supabaseClient.auth.signOut(); bloquearAplicacion(); });
+  $('authLogout').addEventListener('click', async () => { if (guardadoPendiente) await guardarEnNube(); await supabaseClient.auth.signOut(); bloquearAplicacion(); });
   $('authUpdatePassword').addEventListener('click', async () => {
     const password = $('authNewPassword').value;
     if (password.length < 8) { mostrarMensajeAuth('La contraseña debe tener al menos 8 caracteres.', 'error'); return; }
