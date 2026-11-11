@@ -8,6 +8,7 @@ const ARCHIVOS = [
   './icon-180.png',
   './icon-192.png',
   './icon-512.png',
+  './icon-200.jpg',
 ];
 
 self.addEventListener('install', (e) => {
