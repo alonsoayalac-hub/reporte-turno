@@ -167,9 +167,9 @@ section.activa{min-width:0}
 #v-areas{display:none}
 #v-areas.activa{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.85fr);gap:0 18px;align-items:start}
 #v-areas .hero,#v-areas .stats,#v-areas .seccion-titulo:nth-of-type(1),#v-areas .accesos{grid-column:1}
-#v-areas .seccion-titulo:nth-of-type(2),#v-areas .card:nth-of-type(3),#v-areas .card:nth-of-type(4){grid-column:2}
-#v-areas .seccion-titulo:nth-of-type(2){grid-row:1}
-#v-areas .card:nth-of-type(3){grid-row:2}#v-areas .card:nth-of-type(4){grid-row:3}
+#v-areas > .seccion-titulo:nth-of-type(5),#v-areas > .card:nth-of-type(6),#v-areas > .card:nth-of-type(7){grid-column:2}
+#v-areas > .seccion-titulo:nth-of-type(5){grid-row:1}
+#v-areas > .card:nth-of-type(6){grid-row:2}#v-areas > .card:nth-of-type(7){grid-row:3}
 #v-evento.activa{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:0 18px;align-items:start}
 #v-evento .card:first-child{grid-column:1;grid-row:1 / span 2}
 #v-evento #previa{grid-column:2;grid-row:1}
@@ -192,7 +192,7 @@ section.activa{min-width:0}
  #v-reporte .col{margin-top:12px}
  #v-reuniones textarea{min-height:230px}
 }
-@media(min-width:901px){
+@media(min-width:760px){
  nav{width:min(900px,calc(100% - 40px));grid-template-columns:repeat(5,1fr)}
  nav button{font-size:12px}.card{padding:22px}.hero{padding:28px}
  .acceso{min-height:88px}
