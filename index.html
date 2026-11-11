@@ -159,6 +159,54 @@ main{padding-top:20px}
 @media(max-width:380px){.stats{gap:6px}.stat{padding:12px 8px}.stat strong{font-size:21px}.stat span{font-size:9px}.hero h2{font-size:21px!important}}
 @media(min-width:760px){body:before{background-size:360px;background-position:calc(50% + 260px) 52%}}
 </style>
+<style>
+/* Diseño adaptable para pantallas grandes, medianas y móviles */
+.marca{max-width:1320px}
+main{width:min(100%,1360px);max-width:1360px;margin:0 auto;padding-left:clamp(14px,2.2vw,32px);padding-right:clamp(14px,2.2vw,32px)}
+section.activa{min-width:0}
+#v-areas{display:none}
+#v-areas.activa{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.85fr);gap:0 18px;align-items:start}
+#v-areas .hero,#v-areas .stats,#v-areas .seccion-titulo:nth-of-type(1),#v-areas .accesos{grid-column:1}
+#v-areas .seccion-titulo:nth-of-type(2),#v-areas .card:nth-of-type(3),#v-areas .card:nth-of-type(4){grid-column:2}
+#v-areas .seccion-titulo:nth-of-type(2){grid-row:1}
+#v-areas .card:nth-of-type(3){grid-row:2}#v-areas .card:nth-of-type(4){grid-row:3}
+#v-evento.activa{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:0 18px;align-items:start}
+#v-evento .card:first-child{grid-column:1;grid-row:1 / span 2}
+#v-evento #previa{grid-column:2;grid-row:1}
+#v-evento #btnGuardarEvento,#v-evento #eventoMsg{grid-column:2}
+#v-reporte.activa{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.42fr);gap:0 18px;align-items:start}
+#v-reporte .seg,#v-reporte #rangoInfo,#v-reporte .card{grid-column:1}
+#v-reporte .col,#v-reporte #repMsg{grid-column:2}
+#v-reporte .col{grid-row:1 / span 3;align-self:center}
+#v-historial.activa{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
+#v-reuniones.activa{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:0 18px;align-items:start}
+#v-reuniones .reunion-editor{grid-column:1;grid-row:1 / span 3}
+#v-reuniones .reuniones-lista{grid-column:2;grid-row:1 / span 3}
+#v-reuniones textarea{min-height:340px}
+#reunionFecha{max-width:260px}
+@media(max-width:900px){
+ main{max-width:820px}
+ #v-areas.activa,#v-evento.activa,#v-reporte.activa,#v-reuniones.activa{display:block}
+ #v-historial.activa{display:block}
+ #v-areas .seccion-titulo:nth-of-type(2),#v-areas .card:nth-of-type(3),#v-areas .card:nth-of-type(4){grid-column:auto;grid-row:auto}
+ #v-reporte .col{margin-top:12px}
+ #v-reuniones textarea{min-height:230px}
+}
+@media(min-width:901px){
+ nav{width:min(900px,calc(100% - 40px));grid-template-columns:repeat(5,1fr)}
+ nav button{font-size:12px}.card{padding:22px}.hero{padding:28px}
+ .acceso{min-height:88px}
+}
+@media(max-width:520px){#v-historial.activa{display:block}.fila{flex-wrap:wrap}#reunionFecha{max-width:none}}
+.reunion-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:12px;margin:6px 0 12px}
+.reunion-contenido{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55;font-size:14px;max-height:190px;overflow:auto}
+.reunion-item{padding:15px 0;border-top:1px solid var(--borde)}.reunion-item:first-child{border-top:0}
+.reunion-item h3{font-size:16px;margin:0;overflow-wrap:anywhere}
+.reunion-item .acciones{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.reunion-item .acciones button{min-height:38px;font-size:12px;padding:7px 10px}
+#reunionContador{display:flex;justify-content:space-between;gap:8px;margin-top:6px;color:var(--muted);font-size:11px}
+#reunionEstado{min-height:20px}
+</style>
 </head>
 <body>
 <header><div class="marca"><img src="icon-192.png" alt="Logo de Reporte de Turno"><div class="marca-texto"><h1 id="titulo">Áreas</h1><p class="subtitulo">OPERACIONES · REPORTE DE TURNO</p></div></div></header>
@@ -239,6 +287,31 @@ main{padding-top:20px}
     </div>
     <div id="repMsg" class="msg"></div>
   </section>
+
+  <!-- APUNTES DE REUNIÓN -->
+  <section id="v-reuniones">
+    <div class="card reunion-editor">
+      <h2 id="reunionEditorTitulo">Nuevo apunte de reunión</h2>
+      <label for="reunionTitulo">Título de la reunión</label>
+      <input type="text" id="reunionTitulo" maxlength="120" placeholder="Ej: Reunión de coordinación operacional">
+      <label for="reunionFecha" style="margin-top:14px">Fecha de la reunión</label>
+      <input type="date" id="reunionFecha">
+      <label for="reunionTexto" style="margin-top:14px">Apuntes</label>
+      <textarea id="reunionTexto" placeholder="Escribe aquí los temas tratados, acuerdos, responsables y compromisos..."></textarea>
+      <div id="reunionContador"><span id="reunionPalabras">0 palabras</span><span id="reunionCaracteres">0 caracteres</span></div>
+      <div class="fila" style="margin-top:14px">
+        <button id="btnGuardarReunion" class="verde" style="flex:1">Guardar apunte</button>
+        <button id="btnNuevaReunion" class="sec">Nuevo</button>
+      </div>
+      <div id="reunionEstado" class="msg" aria-live="polite"></div>
+      <p class="muted">Los apuntes se guardan en este dispositivo y navegador, igual que los eventos del turno.</p>
+    </div>
+    <div class="card reuniones-lista">
+      <h2>Reuniones guardadas</h2>
+      <input type="search" id="buscarReunion" placeholder="Buscar por título o contenido..." style="margin-bottom:12px">
+      <div id="listaReuniones"></div>
+    </div>
+  </section>
 </main>
 
 <nav>
@@ -246,6 +319,7 @@ main{padding-top:20px}
   <button data-tab="evento"><span>✏️</span>Evento</button>
   <button data-tab="historial"><span>📋</span>Historial</button>
   <button data-tab="reporte"><span>📄</span>Reporte</button>
+  <button data-tab="reuniones"><span>📝</span>Apuntes</button>
 </nav>
 
 <!-- EDITAR EVENTO -->
@@ -277,10 +351,11 @@ main{padding-top:20px}
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
   // ---------- Datos (se guardan solo en este dispositivo) ----------
-  const K_AREAS = 'rt_areas', K_EVENTOS = 'rt_eventos';
+  const K_AREAS = 'rt_areas', K_EVENTOS = 'rt_eventos', K_REUNIONES = 'rt_reuniones';
   function cargar(k) { try { return JSON.parse(localStorage.getItem(k)) || []; } catch (e) { return []; } }
   let areas = cargar(K_AREAS);
   let eventos = cargar(K_EVENTOS);
+  let reuniones = cargar(K_REUNIONES);
   function guardar() {
     try {
       localStorage.setItem(K_AREAS, JSON.stringify(areas));
@@ -289,7 +364,7 @@ main{padding-top:20px}
   }
 
   // ---------- Pestañas ----------
-  const TITULOS = { areas: 'Inicio', evento: 'Nuevo evento', historial: 'Historial', reporte: 'Reporte de turno' };
+  const TITULOS = { areas: 'Inicio', evento: 'Nuevo evento', historial: 'Historial', reporte: 'Reporte de turno', reuniones: 'Apuntes de reunión' };
   function mostrar(tab) {
     document.querySelectorAll('section').forEach((s) => s.classList.toggle('activa', s.id === 'v-' + tab));
     document.querySelectorAll('nav button').forEach((b) => b.classList.toggle('activo', b.dataset.tab === tab));
@@ -298,6 +373,7 @@ main{padding-top:20px}
     if (tab === 'evento') { renderSelectorAreas(); renderPrevia(); }
     if (tab === 'historial') renderHistorial();
     if (tab === 'reporte') renderReporte();
+    if (tab === 'reuniones') renderReuniones();
     window.scrollTo(0, 0);
   }
   document.querySelectorAll('nav button').forEach((b) => b.addEventListener('click', () => mostrar(b.dataset.tab)));
@@ -519,6 +595,136 @@ main{padding-top:20px}
     cerrarEditor();
     renderHistorial();
   });
+
+  // ---------- Apuntes de reunión ----------
+  let reunionEditandoId = null;
+  const fechaLocalISO = (d = new Date()) => {
+    const z = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+    return z.toISOString().slice(0, 10);
+  };
+  const fechaLegible = (iso) => {
+    if (!iso) return 'Sin fecha';
+    const p = iso.split('-');
+    return p.length === 3 ? p[2] + '-' + p[1] + '-' + p[0] : iso;
+  };
+  function guardarReuniones() {
+    try { localStorage.setItem(K_REUNIONES, JSON.stringify(reuniones)); return true; }
+    catch (e) { return false; }
+  }
+  function limpiarEditorReunion() {
+    reunionEditandoId = null;
+    $('reunionEditorTitulo').textContent = 'Nuevo apunte de reunión';
+    $('reunionTitulo').value = '';
+    $('reunionFecha').value = fechaLocalISO();
+    $('reunionTexto').value = '';
+    $('btnGuardarReunion').textContent = 'Guardar apunte';
+    $('reunionEstado').className = 'msg';
+    $('reunionEstado').textContent = '';
+    actualizarContadorReunion();
+  }
+  function actualizarContadorReunion() {
+    const t = $('reunionTexto').value;
+    const palabras = t.trim() ? t.trim().split(/\s+/).length : 0;
+    $('reunionPalabras').textContent = palabras + (palabras === 1 ? ' palabra' : ' palabras');
+    $('reunionCaracteres').textContent = t.length + ' caracteres';
+  }
+  function renderReuniones() {
+    const q = $('buscarReunion').value.trim().toLocaleLowerCase('es');
+    const lista = reuniones.filter(r => (r.titulo + ' ' + r.contenido).toLocaleLowerCase('es').includes(q))
+      .sort((a,b) => (b.fecha || '').localeCompare(a.fecha || '') || (b.actualizado || b.creado || 0) - (a.actualizado || a.creado || 0));
+    const cont = $('listaReuniones');
+    if (!lista.length) {
+      cont.innerHTML = '<div class="vacio">' + (q ? 'No hay reuniones que coincidan con la búsqueda.' : 'Todavía no hay apuntes guardados. Crea el primero usando el formulario.') + '</div>';
+      return;
+    }
+    cont.innerHTML = lista.map(r => `
+      <article class="reunion-item" data-id="${esc(r.id)}">
+        <h3>${esc(r.titulo)}</h3>
+        <div class="reunion-meta"><span>📅 ${esc(fechaLegible(r.fecha))}</span><span>·</span><span>${(r.contenido || '').trim() ? (r.contenido.trim().split(/\s+/).length + ' palabras') : 'Sin contenido'}</span></div>
+        <div class="reunion-contenido">${esc(r.contenido || '')}</div>
+        <div class="acciones">
+          <button class="mini" data-reunion-accion="editar">✏️ Editar</button>
+          <button class="mini" data-reunion-accion="copiar">📋 Copiar</button>
+          <button class="mini" data-reunion-accion="txt">⬇️ Descargar</button>
+          <button class="peligro" data-reunion-accion="eliminar">Eliminar</button>
+        </div>
+      </article>`).join('');
+  }
+  function cargarReunionEnEditor(id) {
+    const r = reuniones.find(x => x.id === id);
+    if (!r) return;
+    reunionEditandoId = id;
+    $('reunionEditorTitulo').textContent = 'Editar apunte de reunión';
+    $('reunionTitulo').value = r.titulo;
+    $('reunionFecha').value = r.fecha || fechaLocalISO();
+    $('reunionTexto').value = r.contenido || '';
+    $('btnGuardarReunion').textContent = 'Guardar cambios';
+    $('reunionEstado').className = 'msg';
+    $('reunionEstado').textContent = 'Editando: ' + r.titulo;
+    actualizarContadorReunion();
+    $('reunionTitulo').focus();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  $('reunionTexto').addEventListener('input', actualizarContadorReunion);
+  $('buscarReunion').addEventListener('input', renderReuniones);
+  $('btnNuevaReunion').addEventListener('click', limpiarEditorReunion);
+  $('btnGuardarReunion').addEventListener('click', () => {
+    const titulo = $('reunionTitulo').value.trim();
+    const contenido = $('reunionTexto').value.trim();
+    const fecha = $('reunionFecha').value;
+    const estado = $('reunionEstado');
+    if (!titulo) { estado.className = 'msg error'; estado.textContent = 'Escribe un título para identificar la reunión.'; $('reunionTitulo').focus(); return; }
+    if (!fecha) { estado.className = 'msg error'; estado.textContent = 'Selecciona la fecha de la reunión.'; return; }
+    if (!contenido) { estado.className = 'msg error'; estado.textContent = 'Agrega al menos un apunte antes de guardar.'; $('reunionTexto').focus(); return; }
+    const ahora = Date.now();
+    if (reunionEditandoId) {
+      const r = reuniones.find(x => x.id === reunionEditandoId);
+      if (!r) { limpiarEditorReunion(); return; }
+      r.titulo = titulo; r.fecha = fecha; r.contenido = contenido; r.actualizado = ahora;
+    } else {
+      reuniones.push({id:uid(), titulo, fecha, contenido, creado:ahora, actualizado:ahora});
+    }
+    if (!guardarReuniones()) {
+      estado.className = 'msg error'; estado.textContent = 'No se pudo guardar. Puede que el almacenamiento del navegador esté lleno.'; return;
+    }
+    renderReuniones();
+    limpiarEditorReunion();
+    estado.className = 'msg ok'; estado.textContent = '✓ Apunte guardado correctamente.';
+  });
+  $('listaReuniones').addEventListener('click', async (e) => {
+    const b = e.target.closest('button[data-reunion-accion]');
+    if (!b) return;
+    const art = b.closest('.reunion-item');
+    const r = reuniones.find(x => x.id === art.dataset.id);
+    if (!r) return;
+    const accion = b.dataset.reunionAccion;
+    const texto = r.titulo + '\nFecha: ' + fechaLegible(r.fecha) + '\n\n' + (r.contenido || '');
+    if (accion === 'editar') { cargarReunionEnEditor(r.id); return; }
+    if (accion === 'eliminar') {
+      if (!confirm('¿Eliminar el apunte "' + r.titulo + '"? Esta acción no se puede deshacer.')) return;
+      reuniones = reuniones.filter(x => x.id !== r.id);
+      guardarReuniones(); renderReuniones();
+      if (reunionEditandoId === r.id) limpiarEditorReunion();
+      return;
+    }
+    if (accion === 'copiar') {
+      try { await navigator.clipboard.writeText(texto); }
+      catch (err) {
+        const tmp = document.createElement('textarea'); tmp.value = texto; document.body.appendChild(tmp); tmp.select();
+        try { document.execCommand('copy'); } catch (e2) {}
+        tmp.remove();
+      }
+      $('reunionEstado').className = 'msg ok'; $('reunionEstado').textContent = '✓ Apunte copiado.';
+      return;
+    }
+    if (accion === 'txt') {
+      const blob = new Blob([texto], {type:'text/plain;charset=utf-8'});
+      const url = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = url; a.download = 'Apunte_Reunion_' + (r.fecha || 'sin-fecha') + '.txt';
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    }
+  });
+  limpiarEditorReunion();
 
   // ---------- Reporte ----------
   let turno = L.turnoActual();
