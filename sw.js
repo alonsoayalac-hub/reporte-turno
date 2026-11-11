@@ -1,5 +1,5 @@
 /* Service worker: permite abrir la app sin internet después de la primera carga. */
-const CACHE = 'reporte-turno-v5';
+const CACHE = 'reporte-turno-v6';
 const ARCHIVOS = [
   './',
   './index.html',
