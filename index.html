@@ -326,6 +326,237 @@ section.activa{min-width:0}
 }
 </style>
 
+
+<style>
+/* Rediseño de escritorio: jerarquía visual, alineación y espacios consistentes */
+@media (min-width: 901px) {
+  body {
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at 8% 0%, rgba(36,94,170,.055), transparent 32%),
+      #f3f6fb;
+  }
+  body:before {
+    opacity:.025 !important;
+    background-size:520px !important;
+    background-position:calc(50% + 440px) 58% !important;
+  }
+  header {
+    position:sticky;
+    top:0;
+    z-index:20;
+    padding:13px 32px !important;
+    background:rgba(255,255,255,.94) !important;
+    border-bottom:1px solid #e3eaf3;
+    box-shadow:0 3px 14px rgba(24,48,82,.045);
+    backdrop-filter:blur(16px);
+  }
+  .marca {
+    width:min(100%,1440px);
+    max-width:1440px !important;
+    min-height:48px;
+    margin:0 auto;
+    gap:14px;
+  }
+  .marca img {
+    width:46px !important;
+    height:46px !important;
+    object-fit:contain !important;
+    border-radius:13px;
+  }
+  header h1 {font-size:20px;letter-spacing:-.025em}
+  .subtitulo {font-size:10px;letter-spacing:.12em}
+  main {
+    width:min(100%,1440px) !important;
+    max-width:1440px !important;
+    margin:0 auto;
+    padding:28px 34px 120px !important;
+  }
+  section.activa {min-width:0}
+  .card {
+    min-width:0;
+    padding:22px 24px !important;
+    margin:0 !important;
+    border:1px solid #e3eaf3;
+    border-radius:18px !important;
+    box-shadow:0 5px 18px rgba(27,52,86,.055) !important;
+  }
+  .card h2 {font-size:12px;letter-spacing:.075em;margin-bottom:14px}
+  .hero {
+    min-height:190px;
+    padding:28px 30px !important;
+    border-radius:20px !important;
+    box-shadow:0 12px 28px rgba(18,59,128,.15) !important;
+  }
+  .hero h2 {font-size:27px !important}
+  .hero p {font-size:14px}
+  .hero-actions {max-width:460px}
+  .hero-actions button {flex:0 1 auto;min-width:160px}
+  .stats {margin:0 !important;gap:10px !important;align-self:stretch}
+  .stat {
+    min-width:0;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:13px 14px !important;
+    border-radius:16px;
+    box-shadow:0 4px 14px rgba(27,52,86,.045);
+  }
+  .stat strong {font-size:27px !important}
+  .stat span {font-size:10px;line-height:1.35}
+  .seccion-titulo {margin:0 2px 2px !important;min-height:24px}
+  .seccion-titulo h2 {font-size:12px;letter-spacing:.09em}
+  #v-areas.activa {
+    display:grid !important;
+    grid-template-columns:repeat(12,minmax(0,1fr)) !important;
+    grid-auto-rows:min-content;
+    align-content:start;
+    align-items:start;
+    gap:16px 20px !important;
+  }
+  #v-areas > .hero {grid-column:1 / span 8 !important;grid-row:1 !important}
+  #v-areas > .stats {
+    grid-column:9 / span 4 !important;
+    grid-row:1 !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  }
+  #v-areas > .seccion-titulo:nth-of-type(1) {
+    grid-column:1 / span 8 !important;
+    grid-row:2 !important;
+  }
+  #v-areas > .accesos {
+    grid-column:1 / span 8 !important;
+    grid-row:3 !important;
+    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+    gap:12px !important;
+    margin:0 !important;
+  }
+  #v-areas .acceso {
+    min-width:0;
+    min-height:92px !important;
+    padding:14px 12px !important;
+    gap:10px !important;
+    border-radius:16px;
+    box-shadow:0 4px 14px rgba(27,52,86,.045);
+  }
+  #v-areas .acceso-icon {width:38px;height:38px;flex:0 0 38px}
+  #v-areas .acceso b {font-size:12px;line-height:1.3}
+  #v-areas .acceso small {font-size:10px;line-height:1.35}
+  #v-areas > .seccion-titulo:nth-of-type(2) {
+    grid-column:9 / span 4 !important;
+    grid-row:2 !important;
+  }
+  #v-areas > .card:nth-of-type(7) {
+    grid-column:9 / span 4 !important;
+    grid-row:3 !important;
+  }
+  #v-areas > .areas-logo {
+    grid-column:1 / span 8 !important;
+    grid-row:4 !important;
+    min-height:300px !important;
+    margin:0 !important;
+    padding:22px !important;
+    display:flex !important;
+    align-items:center;
+    justify-content:center;
+    border:1px solid #e3eaf3;
+    border-radius:20px;
+    background:linear-gradient(145deg,#fff,#f7faff);
+    box-shadow:0 5px 18px rgba(27,52,86,.05);
+  }
+  #v-areas > .areas-logo img {
+    display:block;
+    width:min(100%,620px) !important;
+    max-width:100%;
+    max-height:260px !important;
+    height:auto;
+    object-fit:contain;
+    filter:drop-shadow(0 8px 18px rgba(22,70,160,.12));
+  }
+  #v-areas > .card:nth-of-type(8) {
+    grid-column:9 / span 4 !important;
+    grid-row:4 !important;
+  }
+
+  #v-evento.activa {
+    display:grid !important;
+    grid-template-columns:minmax(0,1.25fr) minmax(340px,.75fr) !important;
+    align-items:start;
+    gap:18px 22px !important;
+  }
+  #v-evento > .card:first-child {grid-column:1 !important;grid-row:1 / span 3 !important}
+  #v-evento #previa {grid-column:2 !important;grid-row:1 !important}
+  #v-evento #btnGuardarEvento,
+  #v-evento #eventoMsg {grid-column:2 !important}
+  #v-evento:has(#previa[hidden]) > .card:first-child {grid-column:1 / -1 !important;grid-row:1 !important}
+  #v-evento:has(#previa[hidden]) #btnGuardarEvento,
+  #v-evento:has(#previa[hidden]) #eventoMsg {grid-column:1 / -1 !important}
+  #v-evento textarea {min-height:240px}
+
+  #v-historial.activa {
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    align-items:start;
+    align-content:start;
+    gap:16px !important;
+  }
+  #historial {display:contents}
+  #historial > .card {height:auto;min-width:0}
+  #historial .ev {min-width:0}
+  #historial .ev .cuerpo {overflow-wrap:anywhere}
+
+  #v-reporte.activa {
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) minmax(280px,340px) !important;
+    align-items:start;
+    gap:16px 22px !important;
+  }
+  #v-reporte > .seg,
+  #v-reporte > #rangoInfo,
+  #v-reporte > .card {grid-column:1 !important}
+  #v-reporte > .col {grid-column:2 !important;grid-row:1 / span 3 !important;align-self:start !important}
+  #v-reporte > #repMsg {grid-column:2 !important}
+  #v-reporte .col button {min-height:54px}
+  #v-reporte .card {min-width:0}
+  #reporte {overflow-wrap:anywhere}
+
+  #v-reuniones.activa {
+    display:grid !important;
+    grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr) !important;
+    align-items:start;
+    align-content:start;
+    gap:20px !important;
+  }
+  #v-reuniones > .reunion-editor {grid-column:1 !important;grid-row:1 !important}
+  #v-reuniones > .reuniones-lista {grid-column:2 !important;grid-row:1 !important}
+  #v-reuniones textarea {min-height:300px}
+  #v-reuniones .reunion-item {padding:16px 0}
+
+  nav {
+    left:50% !important;
+    right:auto !important;
+    bottom:14px !important;
+    transform:translateX(-50%) !important;
+    width:min(620px,calc(100% - 48px)) !important;
+    grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+    padding:8px !important;
+    border:1px solid #dfe7f1 !important;
+    border-radius:18px !important;
+    background:rgba(255,255,255,.94) !important;
+    box-shadow:0 10px 34px rgba(20,42,75,.14) !important;
+    backdrop-filter:blur(18px);
+  }
+  nav button {min-height:56px;border-radius:12px !important;font-size:11px !important}
+}
+@media (min-width:901px) and (max-width:1120px) {
+  main {padding-left:22px !important;padding-right:22px !important}
+  #v-areas > .accesos {grid-template-columns:repeat(2,minmax(0,1fr)) !important}
+  #v-areas .acceso {min-height:76px !important}
+  #v-historial.activa {grid-template-columns:repeat(2,minmax(0,1fr)) !important}
+}
+</style>
+
 </head>
 <body>
 <header><div class="marca"><img src="icon-192.png" alt="Logo de Reporte de Turno"><div class="marca-texto"><h1 id="titulo">Áreas</h1><p class="subtitulo">OPERACIONES · REPORTE DE TURNO</p></div></div></header>
