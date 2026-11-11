@@ -135,6 +135,30 @@ nav button.activo{color:var(--pri);background:color-mix(in srgb,var(--pri) 9%,tr
 @media(min-width:760px){main{padding-top:24px}nav{left:50%;right:auto;transform:translateX(-50%);width:min(100%,520px);bottom:12px;border:1px solid var(--borde);border-radius:18px;padding:7px;box-shadow:0 10px 32px #14233c1f}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
+<style>
+body{position:relative;isolation:isolate;background:radial-gradient(ellipse at 12% 8%,rgba(45,105,190,.09),transparent 34%),radial-gradient(ellipse at 90% 60%,rgba(38,130,115,.06),transparent 32%),var(--bg)}
+body:before{content:"";position:fixed;z-index:-1;pointer-events:none;inset:0;background:url("icon-512.png") no-repeat center 56%/min(78vw,440px);opacity:.045;filter:grayscale(1)}
+@media(prefers-color-scheme:dark){body:before{opacity:.07;filter:grayscale(1) brightness(1.8)}}
+header{background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(18px)}
+main{padding-top:20px}
+.hero{position:relative;overflow:hidden;color:#fff;border:0;background:linear-gradient(125deg,#123b80,#1d5bb0 62%,#267c9d);padding:22px;box-shadow:0 14px 32px #123b8028}
+.hero:after{content:"";position:absolute;width:190px;height:190px;right:-48px;top:-48px;background:url("icon-512.png") center/contain no-repeat;opacity:.12;filter:grayscale(1) brightness(0) invert(1);pointer-events:none}
+.hero>*{position:relative;z-index:1}.hero-kicker{font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;opacity:.75}
+.hero h2{color:#fff!important;font-size:23px!important;letter-spacing:-.03em!important;text-transform:none!important;margin:7px 0 4px!important}.hero p{margin:0;color:#e5efff;font-size:13px}
+.hero-actions{display:flex;gap:9px;margin-top:17px;flex-wrap:wrap}.hero-actions button{min-height:48px;flex:1;background:#fff;color:#1646a0}.hero-actions button.sec{background:#ffffff18;color:#fff;border:1px solid #ffffff55}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:16px}.stat{background:var(--card);border:1px solid var(--borde);border-radius:16px;padding:14px 11px;box-shadow:0 6px 18px #1930560a}
+.stat strong{display:block;font-size:24px;line-height:1.1;color:var(--pri)}.stat span{display:block;color:var(--muted);font-size:10px;font-weight:750;text-transform:uppercase;letter-spacing:.055em;margin-top:6px}
+.seccion-titulo{display:flex;justify-content:space-between;align-items:center;margin:5px 2px 10px}.seccion-titulo h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.accesos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:17px}.acceso{display:flex;align-items:center;gap:12px;text-align:left;min-height:76px;padding:13px;background:var(--card);color:var(--txt);border:1px solid var(--borde);box-shadow:0 6px 18px #1930560a}
+.acceso-icon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:color-mix(in srgb,var(--pri) 10%,transparent);font-size:21px;flex:none}.acceso b{display:block;font-size:13px}.acceso small{display:block;color:var(--muted);font-size:10px;margin-top:2px;font-weight:500}
+.chips-areas{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.chips-areas button{background:color-mix(in srgb,var(--pri) 8%,var(--card));color:var(--pri);border:1px solid color-mix(in srgb,var(--pri) 18%,var(--borde));min-height:44px;padding:9px 13px;font-size:12px}.chips-areas .sin-areas{font-size:12px;color:var(--muted);padding:8px 2px}
+#btnGuardarEvento{min-height:56px;font-size:16px;box-shadow:0 8px 18px #1646a026}
+#historial .card h2{font-size:13px;color:var(--pri);letter-spacing:.04em}
+#rangoInfo{background:color-mix(in srgb,var(--pri) 7%,var(--card));border:1px solid var(--borde);padding:11px;border-radius:13px;font-weight:650}
+.report-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}.report-head img{width:38px;height:38px;border-radius:11px}.report-head strong{display:block;font-size:14px}.report-head small{color:var(--muted);font-size:11px}
+@media(max-width:380px){.stats{gap:6px}.stat{padding:12px 8px}.stat strong{font-size:21px}.stat span{font-size:9px}.hero h2{font-size:21px!important}}
+@media(min-width:760px){body:before{background-size:360px;background-position:calc(50% + 260px) 52%}}
+</style>
 </head>
 <body>
 <header><div class="marca"><img src="icon-192.png" alt="Logo de Reporte de Turno"><div class="marca-texto"><h1 id="titulo">Áreas</h1><p class="subtitulo">OPERACIONES · REPORTE DE TURNO</p></div></div></header>
@@ -142,6 +166,24 @@ nav button.activo{color:var(--pri);background:color-mix(in srgb,var(--pri) 9%,tr
 <main>
   <!-- ÁREAS -->
   <section id="v-areas" class="activa">
+    <div class="card hero">
+      <div class="hero-kicker">Panel de operaciones</div><h2>Control del turno</h2>
+      <p id="dashboardFecha">Resumen de actividad y novedades registradas.</p>
+      <div class="hero-actions"><button type="button" data-go="evento">＋ Nuevo evento</button><button type="button" class="sec" data-go="reporte">Ver reporte</button></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><strong id="statTurno">0</strong><span>Eventos del turno</span></div>
+      <div class="stat"><strong id="statTotal">0</strong><span>Total registrados</span></div>
+      <div class="stat"><strong id="statAreas">0</strong><span>Áreas activas</span></div>
+    </div>
+    <div class="seccion-titulo"><h2>Accesos rápidos</h2></div>
+    <div class="accesos">
+      <button class="acceso" type="button" data-go="evento"><span class="acceso-icon">✍️</span><span><b>Registrar evento</b><small>Agregar una novedad</small></span></button>
+      <button class="acceso" type="button" data-go="historial"><span class="acceso-icon">📋</span><span><b>Ver historial</b><small>Consultar registros</small></span></button>
+      <button class="acceso" type="button" data-go="reporte"><span class="acceso-icon">📄</span><span><b>Generar reporte</b><small>Compartir el turno</small></span></button>
+      <button class="acceso" type="button" data-go="areas-admin"><span class="acceso-icon">⚙️</span><span><b>Configurar áreas</b><small>Administrar la planta</small></span></button>
+    </div>
+    <div class="seccion-titulo"><h2>Áreas de la planta</h2></div>
     <div class="card">
       <h2>Agregar área</h2>
       <div class="fila">
@@ -151,16 +193,17 @@ nav button.activo{color:var(--pri);background:color-mix(in srgb,var(--pri) 9%,tr
       <div id="areaMsg" class="msg error"></div>
     </div>
     <div class="card">
-      <h2>Áreas de la planta</h2>
-      <div id="listaAreas"></div>
+      <h2>Administración de áreas</h2><div id="listaAreas"></div>
     </div>
   </section>
 
   <!-- EVENTO -->
   <section id="v-evento">
     <div class="card">
-      <h2>Evento del turno</h2>
-      <label for="texto">Empieza con el nombre del área y luego lo que ocurrió.</label>
+      <h2>Nuevo evento</h2>
+      <p class="muted" style="margin:0 0 10px">1. Selecciona el área para comenzar.</p>
+      <div id="selectorAreas" class="chips-areas"></div>
+      <label for="texto" style="margin-top:16px">2. Describe qué ocurrió</label>
       <textarea id="texto" placeholder="Ej: Chancado, corte de correa 211-BT1, se está gestionando cambio"></textarea>
       <div class="fila" style="margin-top:10px">
         <button id="mic" class="sec" type="button">🎤 Dictar por voz</button>
@@ -169,7 +212,7 @@ nav button.activo{color:var(--pri);background:color-mix(in srgb,var(--pri) 9%,tr
       <div id="vozMsg" class="msg muted"></div>
     </div>
     <div class="card vista-previa" id="previa" hidden>
-      <h2>Vista previa</h2>
+      <h2>Revisa el registro</h2>
       <div id="previaCuerpo"></div>
     </div>
     <button id="btnGuardarEvento" style="width:100%" disabled>Guardar evento</button>
@@ -188,7 +231,7 @@ nav button.activo{color:var(--pri);background:color-mix(in srgb,var(--pri) 9%,tr
       <button id="turnoNoche" type="button">🌙 Turno Noche</button>
     </div>
     <div class="muted" id="rangoInfo" style="text-align:center;margin-bottom:10px"></div>
-    <div class="card"><pre id="reporte"></pre></div>
+    <div class="card"><div class="report-head"><img src="icon-192.png" alt=""><span><strong>Reporte de Turno</strong><small>Resumen listo para compartir</small></span></div><pre id="reporte"></pre></div>
     <div class="col">
       <button class="verde" id="btnWhatsApp">Enviar por WhatsApp</button>
       <button class="sec" id="btnArchivo">Compartir archivo .txt</button>
@@ -199,7 +242,7 @@ nav button.activo{color:var(--pri);background:color-mix(in srgb,var(--pri) 9%,tr
 </main>
 
 <nav>
-  <button data-tab="areas" class="activo"><span>🏭</span>Áreas</button>
+  <button data-tab="areas" class="activo"><span>⌂</span>Inicio</button>
   <button data-tab="evento"><span>✏️</span>Evento</button>
   <button data-tab="historial"><span>📋</span>Historial</button>
   <button data-tab="reporte"><span>📄</span>Reporte</button>
@@ -246,21 +289,43 @@ nav button.activo{color:var(--pri);background:color-mix(in srgb,var(--pri) 9%,tr
   }
 
   // ---------- Pestañas ----------
-  const TITULOS = { areas: 'Áreas', evento: 'Nuevo evento', historial: 'Historial', reporte: 'Reporte de turno' };
+  const TITULOS = { areas: 'Inicio', evento: 'Nuevo evento', historial: 'Historial', reporte: 'Reporte de turno' };
   function mostrar(tab) {
     document.querySelectorAll('section').forEach((s) => s.classList.toggle('activa', s.id === 'v-' + tab));
     document.querySelectorAll('nav button').forEach((b) => b.classList.toggle('activo', b.dataset.tab === tab));
     $('titulo').textContent = TITULOS[tab];
     if (tab === 'areas') renderAreas();
-    if (tab === 'evento') renderPrevia();
+    if (tab === 'evento') { renderSelectorAreas(); renderPrevia(); }
     if (tab === 'historial') renderHistorial();
     if (tab === 'reporte') renderReporte();
     window.scrollTo(0, 0);
   }
   document.querySelectorAll('nav button').forEach((b) => b.addEventListener('click', () => mostrar(b.dataset.tab)));
+  document.addEventListener('click', (e) => {
+    const go = e.target.closest('[data-go]'); if (!go) return;
+    const dest = go.dataset.go;
+    if (dest === 'areas-admin') { $('areaNueva').focus(); $('areaNueva').scrollIntoView({behavior:'smooth',block:'center'}); return; }
+    mostrar(dest);
+  });
 
   // ---------- Áreas ----------
+  function renderDashboard() {
+    const ahora = new Date(), tipo = L.turnoActual(ahora), rango = L.rangoTurno(tipo, ahora);
+    const cantidad = eventos.filter((e) => e.fecha >= rango.inicio.getTime() && e.fecha < rango.fin.getTime()).length;
+    $('statTurno').textContent = cantidad; $('statTotal').textContent = eventos.length; $('statAreas').textContent = areas.length;
+    $('dashboardFecha').textContent = (tipo === 'dia' ? 'Turno Día' : 'Turno Noche') + ' · ' + L.nombreDia(ahora) + ' ' + L.fFecha(ahora) + ' · ' + L.fHora(ahora);
+  }
+  function renderSelectorAreas() {
+    const cont = $('selectorAreas');
+    if (!areas.length) { cont.innerHTML = '<span class="sin-areas">Primero agrega las áreas desde Inicio.</span>'; return; }
+    cont.innerHTML = areas.map((a) => '<button type="button" data-area-text="' + esc(a.nombre) + '">' + esc(a.nombre) + '</button>').join('');
+  }
+  $('selectorAreas').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-area-text]'); if (!b) return;
+    $('texto').value = b.dataset.areaText + ', '; $('texto').focus(); renderPrevia();
+  });
   function renderAreas() {
+    renderDashboard();
     const cont = $('listaAreas');
     if (!areas.length) {
       cont.innerHTML = '<div class="vacio">Aún no hay áreas.<br>Agrega una arriba, por ejemplo CHANCADO.</div>';
@@ -323,6 +388,7 @@ nav button.activo{color:var(--pri);background:color-mix(in srgb,var(--pri) 9%,tr
     if (!r.descripcion) { msg.className = 'msg error'; msg.textContent = 'Después del nombre del área escribe qué ocurrió.'; return; }
     eventos.push({ id: uid(), areaId: r.area.id, areaNombre: r.area.nombre, descripcion: r.descripcion, fecha: Date.now() });
     guardar();
+    renderDashboard();
     $('texto').value = '';
     renderPrevia();
     msg.className = 'msg ok';
