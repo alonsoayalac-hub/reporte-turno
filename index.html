@@ -682,6 +682,7 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     <p class="auth-intro">Inicia sesión para acceder a tus áreas, eventos y apuntes desde cualquiera de tus dispositivos.</p>
     <label for="authEmail">Correo electrónico</label><input id="authEmail" type="email" autocomplete="email" placeholder="nombre@correo.com">
     <label for="authPassword">Contraseña</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Ingresa tu contraseña">
+    <div id="passwordRecoveryBox" hidden><label for="authNewPassword">Nueva contraseña</label><input id="authNewPassword" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres"><button id="authUpdatePassword" type="button" style="width:100%;margin-top:10px">Guardar nueva contraseña</button></div>
     <div class="auth-actions">
       <button id="authLogin" type="button">Iniciar sesión</button>
       <button id="authRegister" class="sec" type="button">Crear cuenta</button>
@@ -906,6 +907,9 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
       intervaloSync = setInterval(sincronizarDesdeNube, 15000);
     } catch (error) {
       console.error(error);
+      usuarioActual = null; areas = []; eventos = []; reuniones = [];
+      $('accountBar').hidden = true;
+      document.body.classList.add('auth-locked');
       estadoSync('Error de conexión', 'error');
       mostrarMensajeAuth('No se pudieron cargar tus datos. Comprueba que ejecutaste supabase-setup.sql en Supabase. ' + (error.message || ''), 'error');
     }
@@ -954,7 +958,7 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     if (!email || !password) { mostrarMensajeAuth('Ingresa tu correo y crea una contraseña.', 'error'); return; }
     if (password.length < 8) { mostrarMensajeAuth('La contraseña debe tener al menos 8 caracteres.', 'error'); return; }
     $('authRegister').disabled = true; mostrarMensajeAuth('Creando cuenta…');
-    const { data, error } = await supabaseClient.auth.signUp({ email, password });
+    const { data, error } = await supabaseClient.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + location.pathname } });
     $('authRegister').disabled = false;
     if (error) { mostrarMensajeAuth(error.message, 'error'); return; }
     if (data.session) await activarSesion(data.session);
@@ -967,8 +971,22 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     mostrarMensajeAuth(error ? error.message : 'Si el correo está registrado, recibirás un enlace para restablecer la contraseña.', error ? 'error' : 'ok');
   });
   $('authLogout').addEventListener('click', async () => { await supabaseClient.auth.signOut(); bloquearAplicacion(); });
+  $('authUpdatePassword').addEventListener('click', async () => {
+    const password = $('authNewPassword').value;
+    if (password.length < 8) { mostrarMensajeAuth('La contraseña debe tener al menos 8 caracteres.', 'error'); return; }
+    const { error } = await supabaseClient.auth.updateUser({ password });
+    if (error) { mostrarMensajeAuth(error.message, 'error'); return; }
+    $('passwordRecoveryBox').hidden = true;
+    $('authNewPassword').value = '';
+    mostrarMensajeAuth('Contraseña actualizada. Ya puedes iniciar sesión.', 'ok');
+    await supabaseClient.auth.signOut();
+  });
   supabaseClient.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_OUT') bloquearAplicacion();
+    if (event === 'PASSWORD_RECOVERY') {
+      document.body.classList.add('auth-locked');
+      $('passwordRecoveryBox').hidden = false;
+      mostrarMensajeAuth('Escribe tu nueva contraseña.', 'ok');
+    } else if (event === 'SIGNED_OUT') bloquearAplicacion();
     else if (session && (!usuarioActual || usuarioActual.id !== session.user.id)) setTimeout(() => activarSesion(session), 0);
   });
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') sincronizarDesdeNube(); });
