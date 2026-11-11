@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reporte de Turno</title>
+<meta name="theme-color" content="#0b3d91">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Reporte Turno">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+  :root {
+    --bg: #f2f4f8; --card: #ffffff; --txt: #111827; --muted: #6b7280; --borde: #e5e7eb;
+    --pri: #0b3d91; --pri-txt: #ffffff; --verde: #1faa59; --rojo: #d92d20; --aviso: #b54708;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0f1115; --card: #1a1d24; --txt: #f3f4f6; --muted: #9ca3af; --borde: #2a2f3a;
+            --pri: #4c8dff; --pri-txt: #0b1220; --rojo: #ff6b61; --aviso: #fdb022; }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--bg); color: var(--txt); font: 16px/1.4 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif; }
+  header { position: sticky; top: 0; z-index: 5; background: var(--pri); color: var(--pri-txt);
+           padding: calc(env(safe-area-inset-top) + 12px) 16px 12px; }
+  @media (prefers-color-scheme: dark) { header { background: var(--card); color: var(--txt); border-bottom: 1px solid var(--borde); } }
+  header h1 { margin: 0; font-size: 20px; }
+  main { max-width: 720px; margin: 0 auto; padding: 14px 14px calc(env(safe-area-inset-bottom) + 90px); }
+  section { display: none; }
+  section.activa { display: block; }
+  .card { background: var(--card); border: 1px solid var(--borde); border-radius: 14px; padding: 14px; margin-bottom: 14px; }
+  .card h2 { margin: 0 0 8px; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 6px; }
+  input[type=text], textarea {
+    width: 100%; font: inherit; color: var(--txt); background: var(--bg);
+    border: 1px solid var(--borde); border-radius: 10px; padding: 11px 12px; }
+  textarea { min-height: 120px; resize: vertical; }
+  button { font: inherit; border: 0; border-radius: 10px; padding: 11px 14px; cursor: pointer;
+           background: var(--pri); color: var(--pri-txt); font-weight: 600; }
+  button.sec { background: transparent; color: var(--pri); border: 1px solid var(--borde); }
+  button.verde { background: var(--verde); color: #fff; }
+  button.peligro { background: transparent; color: var(--rojo); padding: 6px 10px; }
+  button.mini { background: transparent; color: var(--muted); border: 1px solid var(--borde); padding: 6px 10px; }
+  button:disabled { opacity: .45; cursor: default; }
+  .fila { display: flex; gap: 8px; align-items: center; }
+  .fila > input { flex: 1; }
+  .col { display: flex; flex-direction: column; gap: 10px; }
+  .msg { font-size: 14px; margin-top: 8px; }
+  .error { color: var(--rojo); }
+  .ok { color: var(--verde); }
+  .aviso { color: var(--aviso); }
+  .muted { color: var(--muted); font-size: 14px; }
+  ul.lista { list-style: none; margin: 0; padding: 0; }
+  ul.lista li { display: flex; align-items: center; gap: 6px; padding: 10px 0; border-top: 1px solid var(--borde); }
+  ul.lista li:first-child { border-top: 0; }
+  ul.lista .nombre { flex: 1; font-weight: 600; }
+  .vacio { text-align: center; color: var(--muted); padding: 30px 10px; }
+  .vista-previa dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; }
+  .vista-previa dt { color: var(--muted); }
+  .vista-previa dd { margin: 0; text-align: right; }
+  .ev { padding: 10px 0; border-top: 1px solid var(--borde); display: flex; gap: 8px; }
+  .ev:first-of-type { border-top: 0; }
+  .ev .cuerpo { flex: 1; }
+  .ev .fecha { font-size: 12px; color: var(--muted); }
+  .ev button { align-self: flex-start; }
+  [hidden] { display: none !important; }
+  select, input[type=datetime-local] {
+    width: 100%; font: inherit; color: var(--txt); background: var(--bg);
+    border: 1px solid var(--borde); border-radius: 10px; padding: 11px 12px; }
+  #modal { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.5); display: flex; align-items: flex-end; justify-content: center; }
+  .modal-caja { background: var(--card); width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto;
+                border-radius: 16px 16px 0 0; padding: 16px 16px calc(env(safe-area-inset-bottom) + 16px); }
+  .modal-caja h2 { margin: 0 0 12px; font-size: 18px; }
+  @media (min-width: 600px) { #modal { align-items: center; } .modal-caja { border-radius: 16px; } }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--card); border: 1px solid var(--borde); border-radius: 12px; padding: 4px; gap: 4px; margin-bottom: 12px; }
+  .seg button { background: transparent; color: var(--txt); }
+  .seg button.activo { background: var(--pri); color: var(--pri-txt); }
+  pre#reporte { white-space: pre-wrap; word-wrap: break-word; margin: 0; font: 14px/1.5 ui-monospace, Menlo, Consolas, monospace; }
+  nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--card); border-top: 1px solid var(--borde);
+        display: grid; grid-template-columns: repeat(4, 1fr); padding-bottom: env(safe-area-inset-bottom); }
+  nav button { background: transparent; color: var(--muted); border-radius: 0; padding: 8px 2px 7px; font-size: 11px; font-weight: 600; }
+  nav button span { display: block; font-size: 21px; line-height: 1.2; }
+  nav button.activo { color: var(--pri); }
+  #mic.grabando { background: var(--rojo); color: #fff; }
+</style>
+</head>
+<body>
+<header><h1 id="titulo">Áreas</h1></header>
+
+<main>
+  <!-- ÁREAS -->
+  <section id="v-areas" class="activa">
+    <div class="card">
+      <h2>Agregar área</h2>
+      <div class="fila">
+        <input type="text" id="areaNueva" placeholder="Ej: CHANCADO" autocapitalize="characters" autocomplete="off">
+        <button id="btnAgregarArea">Agregar</button>
+      </div>
+      <div id="areaMsg" class="msg error"></div>
+    </div>
+    <div class="card">
+      <h2>Áreas de la planta</h2>
+      <div id="listaAreas"></div>
+    </div>
+  </section>
+
+  <!-- EVENTO -->
+  <section id="v-evento">
+    <div class="card">
+      <h2>Evento del turno</h2>
+      <label for="texto">Empieza con el nombre del área y luego lo que ocurrió.</label>
+      <textarea id="texto" placeholder="Ej: Chancado, corte de correa 211-BT1, se está gestionando cambio"></textarea>
+      <div class="fila" style="margin-top:10px">
+        <button id="mic" class="sec" type="button">🎤 Dictar por voz</button>
+        <button id="btnLimpiar" class="mini" type="button">Borrar texto</button>
+      </div>
+      <div id="vozMsg" class="msg muted"></div>
+    </div>
+    <div class="card vista-previa" id="previa" hidden>
+      <h2>Vista previa</h2>
+      <div id="previaCuerpo"></div>
+    </div>
+    <button id="btnGuardarEvento" style="width:100%" disabled>Guardar evento</button>
+    <div id="eventoMsg" class="msg"></div>
+  </section>
+
+  <!-- HISTORIAL -->
+  <section id="v-historial">
+    <div id="historial"></div>
+  </section>
+
+  <!-- REPORTE -->
+  <section id="v-reporte">
+    <div class="seg">
+      <button id="turnoDia" type="button">☀️ Turno Día</button>
+      <button id="turnoNoche" type="button">🌙 Turno Noche</button>
+    </div>
+    <div class="muted" id="rangoInfo" style="text-align:center;margin-bottom:10px"></div>
+    <div class="card"><pre id="reporte"></pre></div>
+    <div class="col">
+      <button class="verde" id="btnWhatsApp">Enviar por WhatsApp</button>
+      <button class="sec" id="btnArchivo">Compartir archivo .txt</button>
+      <button class="sec" id="btnCopiar">Copiar texto</button>
+    </div>
+    <div id="repMsg" class="msg"></div>
+  </section>
+</main>
+
+<nav>
+  <button data-tab="areas" class="activo"><span>🏭</span>Áreas</button>
+  <button data-tab="evento"><span>✏️</span>Evento</button>
+  <button data-tab="historial"><span>📋</span>Historial</button>
+  <button data-tab="reporte"><span>📄</span>Reporte</button>
+</nav>
+
+<!-- EDITAR EVENTO -->
+<div id="modal" hidden>
+  <div class="modal-caja">
+    <h2>Editar evento</h2>
+    <label for="edArea">Área</label>
+    <select id="edArea"></select>
+    <label for="edTexto" style="margin-top:12px">Descripción</label>
+    <textarea id="edTexto"></textarea>
+    <label for="edFecha" style="margin-top:12px">Fecha y hora del evento</label>
+    <input type="datetime-local" id="edFecha">
+    <div class="muted" style="margin-top:6px">Si cambias la fecha u hora, el evento puede pasar a otro turno del reporte.</div>
+    <div id="edMsg" class="msg error"></div>
+    <div class="fila" style="margin-top:12px">
+      <button class="sec" id="edCancelar" style="flex:1">Cancelar</button>
+      <button id="edGuardar" style="flex:1">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<script src="logica.js"></script>
+<script>
+(function () {
+  'use strict';
+  const L = window.Logica;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+  // ---------- Datos (se guardan solo en este dispositivo) ----------
+  const K_AREAS = 'rt_areas', K_EVENTOS = 'rt_eventos';
+  function cargar(k) { try { return JSON.parse(localStorage.getItem(k)) || []; } catch (e) { return []; } }
+  let areas = cargar(K_AREAS);
+  let eventos = cargar(K_EVENTOS);
+  function guardar() {
+    try {
+      localStorage.setItem(K_AREAS, JSON.stringify(areas));
+      localStorage.setItem(K_EVENTOS, JSON.stringify(eventos));
+    } catch (e) { /* almacenamiento no disponible */ }
+  }
+
+  // ---------- Pestañas ----------
+  const TITULOS = { areas: 'Áreas', evento: 'Nuevo evento', historial: 'Historial', reporte: 'Reporte de turno' };
+  function mostrar(tab) {
+    document.querySelectorAll('section').forEach((s) => s.classList.toggle('activa', s.id === 'v-' + tab));
+    document.querySelectorAll('nav button').forEach((b) => b.classList.toggle('activo', b.dataset.tab === tab));
+    $('titulo').textContent = TITULOS[tab];
+    if (tab === 'areas') renderAreas();
+    if (tab === 'evento') renderPrevia();
+    if (tab === 'historial') renderHistorial();
+    if (tab === 'reporte') renderReporte();
+    window.scrollTo(0, 0);
+  }
+  document.querySelectorAll('nav button').forEach((b) => b.addEventListener('click', () => mostrar(b.dataset.tab)));
+
+  // ---------- Áreas ----------
+  function renderAreas() {
+    const cont = $('listaAreas');
+    if (!areas.length) {
+      cont.innerHTML = '<div class="vacio">Aún no hay áreas.<br>Agrega una arriba, por ejemplo CHANCADO.</div>';
+      return;
+    }
+    cont.innerHTML = '<ul class="lista">' + areas.map((a, i) =>
+      `<li data-id="${a.id}"><span class="nombre">${esc(a.nombre)}</span>
+        <button class="mini" data-acc="sube" ${i === 0 ? 'disabled' : ''} aria-label="Subir">▲</button>
+        <button class="mini" data-acc="baja" ${i === areas.length - 1 ? 'disabled' : ''} aria-label="Bajar">▼</button>
+        <button class="peligro" data-acc="borra" aria-label="Eliminar">✕</button></li>`).join('') + '</ul>';
+  }
+  $('listaAreas').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-acc]');
+    if (!b) return;
+    const id = b.closest('li').dataset.id;
+    const i = areas.findIndex((a) => a.id === id);
+    if (i < 0) return;
+    if (b.dataset.acc === 'sube' && i > 0) [areas[i - 1], areas[i]] = [areas[i], areas[i - 1]];
+    if (b.dataset.acc === 'baja' && i < areas.length - 1) [areas[i + 1], areas[i]] = [areas[i], areas[i + 1]];
+    if (b.dataset.acc === 'borra') {
+      if (!confirm(`¿Eliminar el área ${areas[i].nombre}? Sus eventos guardados no se borran.`)) return;
+      areas.splice(i, 1);
+    }
+    guardar(); renderAreas();
+  });
+  function agregarArea() {
+    const nombre = $('areaNueva').value.trim().toUpperCase();
+    const msg = $('areaMsg');
+    if (!nombre) { msg.textContent = 'Escribe un nombre.'; return; }
+    if (areas.some((a) => L.normalizar(a.nombre) === L.normalizar(nombre))) { msg.textContent = 'Esa área ya existe.'; return; }
+    areas.push({ id: uid(), nombre });
+    guardar();
+    $('areaNueva').value = '';
+    msg.textContent = '';
+    renderAreas();
+  }
+  $('btnAgregarArea').addEventListener('click', agregarArea);
+  $('areaNueva').addEventListener('keydown', (e) => { if (e.key === 'Enter') agregarArea(); });
+
+  // ---------- Evento ----------
+  function renderPrevia() {
+    const txt = $('texto').value;
+    const vacio = !txt.trim();
+    $('btnGuardarEvento').disabled = vacio;
+    $('previa').hidden = vacio;
+    if (vacio) return;
+    const r = L.clasificar(txt, areas);
+    $('previaCuerpo').innerHTML =
+      `<dl><dt>Área</dt><dd><b>${esc(r.area.nombre)}</b></dd><dt>Evento</dt><dd>${r.descripcion ? esc(r.descripcion) : '—'}</dd></dl>` +
+      (r.sinArea ? `<div class="aviso" style="margin-top:8px">⚠️ No se detectó un área al inicio del texto: se guardará en ${esc(L.OTROS)}.${areas.length ? '' : ' (Aún no has creado áreas en la pestaña Áreas.)'}</div>` : '');
+  }
+  $('texto').addEventListener('input', () => { $('eventoMsg').textContent = ''; renderPrevia(); });
+  $('btnLimpiar').addEventListener('click', () => { $('texto').value = ''; renderPrevia(); });
+
+  $('btnGuardarEvento').addEventListener('click', () => {
+    const msg = $('eventoMsg');
+    if (grabando) detenerVoz();
+    const r = L.clasificar($('texto').value, areas);
+    if (!r) return;
+    if (!r.descripcion) { msg.className = 'msg error'; msg.textContent = 'Después del nombre del área escribe qué ocurrió.'; return; }
+    eventos.push({ id: uid(), areaId: r.area.id, areaNombre: r.area.nombre, descripcion: r.descripcion, fecha: Date.now() });
+    guardar();
+    $('texto').value = '';
+    renderPrevia();
+    msg.className = 'msg ok';
+    msg.textContent = `✓ Evento guardado en ${r.area.nombre}` + (r.sinArea ? ' (no se detectó un área)' : '');
+  });
+
+  // ---------- Dictado por voz ----------
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const esIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const instalada = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+  let rec = null, grabando = false, baseTexto = '';
+
+  if (!SR || (esIOS && instalada)) {
+    $('mic').hidden = true;
+    $('vozMsg').textContent = esIOS
+      ? 'Para dictar usa el micrófono del teclado del iPhone (junto a la barra espaciadora).'
+      : 'Este navegador no permite dictado dentro de la app. Usa el micrófono del teclado o abre la app en Chrome o Edge.';
+  } else if (esIOS) {
+    $('vozMsg').textContent = 'También puedes dictar con el micrófono del teclado del iPhone.';
+  }
+
+  function detenerVoz() { try { rec && rec.stop(); } catch (e) {} }
+  function iniciarVoz() {
+    $('vozMsg').className = 'msg muted';
+    rec = new SR();
+    rec.lang = 'es-CL';
+    rec.continuous = true;
+    rec.interimResults = true;
+    baseTexto = $('texto').value.trim();
+    rec.onstart = () => { grabando = true; $('mic').classList.add('grabando'); $('mic').textContent = '⏹ Detener grabación'; $('vozMsg').textContent = 'Escuchando… habla ahora.'; };
+    rec.onresult = (ev) => {
+      let t = '';
+      for (let i = 0; i < ev.results.length; i++) t += ev.results[i][0].transcript;
+      $('texto').value = (baseTexto ? baseTexto + ' ' : '') + t.trim();
+      renderPrevia();
+    };
+    rec.onerror = (ev) => {
+      const m = {
+        'not-allowed': 'Permite el uso del micrófono para este sitio en los ajustes del navegador.',
+        'service-not-allowed': 'El dictado no está permitido en este navegador. Usa el micrófono del teclado.',
+        'no-speech': 'No se escuchó nada. Intenta de nuevo.',
+        'audio-capture': 'No se encontró un micrófono.',
+        'network': 'El dictado necesita conexión a internet.',
+      };
+      $('vozMsg').className = 'msg error';
+      $('vozMsg').textContent = m[ev.error] || 'El dictado se detuvo: ' + ev.error;
+    };
+    rec.onend = () => { grabando = false; $('mic').classList.remove('grabando'); $('mic').textContent = '🎤 Dictar por voz'; if ($('vozMsg').className.indexOf('error') < 0) $('vozMsg').textContent = ''; };
+    try { rec.start(); } catch (e) { $('vozMsg').className = 'msg error'; $('vozMsg').textContent = 'No se pudo iniciar el dictado.'; }
+  }
+  $('mic').addEventListener('click', () => { grabando ? detenerVoz() : iniciarVoz(); });
+
+  // ---------- Historial ----------
+  function renderHistorial() {
+    const cont = $('historial');
+    if (!eventos.length) {
+      cont.innerHTML = '<div class="vacio">Sin eventos.<br>Los eventos que registres aparecerán aquí agrupados por área.</div>';
+      return;
+    }
+    const nombres = L.nombresDeArea(areas, eventos);
+    cont.innerHTML = nombres.map((n) => {
+      const lista = eventos.filter((e) => e.areaNombre === n).sort((a, b) => b.fecha - a.fecha);
+      if (!lista.length) return '';
+      return `<div class="card"><h2>${esc(n)}</h2>` + lista.map((e) => {
+        const d = new Date(e.fecha);
+        const ed = e.editado ? ` · editado ${L.fFecha(new Date(e.editado))} ${L.fHora(new Date(e.editado))}` : '';
+        return `<div class="ev" data-id="${e.id}"><div class="cuerpo"><div class="fecha">${L.fFecha(d)} ${L.fHora(d)}${ed}</div>${esc(e.descripcion)}</div>
+          <button class="mini" data-acc="edita" aria-label="Editar">✏️</button>
+          <button class="peligro" data-acc="borra" aria-label="Eliminar">✕</button></div>`;
+      }).join('') + '</div>';
+    }).join('');
+  }
+  $('historial').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-acc]');
+    if (!b) return;
+    const id = b.closest('.ev').dataset.id;
+    if (b.dataset.acc === 'edita') { abrirEditor(id); return; }
+    if (!confirm('¿Eliminar este evento?')) return;
+    eventos = eventos.filter((x) => x.id !== id);
+    guardar(); renderHistorial();
+  });
+
+  // ---------- Editar evento ----------
+  let editandoId = null;
+  const pad2 = (n) => String(n).padStart(2, '0');
+  const aInputFecha = (ms) => {
+    const d = new Date(ms);
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+  };
+
+  function abrirEditor(id) {
+    const ev = eventos.find((x) => x.id === id);
+    if (!ev) return;
+    editandoId = id;
+    const nombres = areas.map((a) => a.nombre);
+    if (!nombres.includes(L.OTROS)) nombres.push(L.OTROS);
+    if (!nombres.includes(ev.areaNombre)) nombres.push(ev.areaNombre); // área ya eliminada
+    $('edArea').innerHTML = nombres.map((n) => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+    $('edArea').value = ev.areaNombre;
+    $('edTexto').value = ev.descripcion;
+    $('edFecha').value = aInputFecha(ev.fecha);
+    $('edMsg').textContent = '';
+    $('modal').hidden = false;
+  }
+  function cerrarEditor() { editandoId = null; $('modal').hidden = true; }
+
+  $('edCancelar').addEventListener('click', cerrarEditor);
+  $('modal').addEventListener('click', (e) => { if (e.target === $('modal')) cerrarEditor(); });
+  $('edGuardar').addEventListener('click', () => {
+    const ev = eventos.find((x) => x.id === editandoId);
+    if (!ev) { cerrarEditor(); return; }
+    const texto = $('edTexto').value.trim();
+    if (!texto) { $('edMsg').textContent = 'La descripción no puede estar vacía.'; return; }
+    const nuevaFecha = new Date($('edFecha').value).getTime();
+    if (isNaN(nuevaFecha)) { $('edMsg').textContent = 'Revisa la fecha y la hora.'; return; }
+
+    const nombre = $('edArea').value;
+    const fechaCambio = $('edFecha').value !== aInputFecha(ev.fecha); // evita truncar los segundos si no se tocó
+    if (texto !== ev.descripcion || nombre !== ev.areaNombre || fechaCambio) {
+      const area = areas.find((a) => a.nombre === nombre);
+      ev.descripcion = texto;
+      ev.areaNombre = nombre;
+      ev.areaId = area ? area.id : (nombre === L.OTROS ? 'otros' : ev.areaId);
+      if (fechaCambio) ev.fecha = nuevaFecha;
+      ev.editado = Date.now();
+      guardar();
+    }
+    cerrarEditor();
+    renderHistorial();
+  });
+
+  // ---------- Reporte ----------
+  let turno = L.turnoActual();
+  let ultimo = null;
+  function renderReporte() {
+    $('turnoDia').classList.toggle('activo', turno === 'dia');
+    $('turnoNoche').classList.toggle('activo', turno === 'noche');
+    ultimo = L.generarReporte(turno, eventos, areas);
+    const r = ultimo.rango;
+    $('rangoInfo').textContent = `${L.nombreDia(r.inicio)} ${L.fFecha(r.inicio)} ${L.fHora(r.inicio)} → ${L.fHora(r.fin)} · ${ultimo.total} evento(s)`;
+    $('reporte').textContent = ultimo.texto;
+    $('repMsg').textContent = '';
+  }
+  $('turnoDia').addEventListener('click', () => { turno = 'dia'; renderReporte(); });
+  $('turnoNoche').addEventListener('click', () => { turno = 'noche'; renderReporte(); });
+
+  function avisoReporte(txt, clase) { const m = $('repMsg'); m.className = 'msg ' + (clase || 'ok'); m.textContent = txt; }
+
+  $('btnWhatsApp').addEventListener('click', () => {
+    if (!ultimo) return;
+    const w = window.open(L.urlWhatsApp(ultimo.texto), '_blank');
+    if (!w) window.location.href = L.urlWhatsApp(ultimo.texto);
+  });
+  $('btnArchivo').addEventListener('click', async () => {
+    if (!ultimo) return;
+    const archivo = new File([ultimo.texto], ultimo.archivo, { type: 'text/plain' });
+    if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
+      try { await navigator.share({ files: [archivo], title: 'Reporte de turno' }); return; }
+      catch (e) { if (e && e.name === 'AbortError') return; }
+    }
+    const url = URL.createObjectURL(archivo);
+    const a = document.createElement('a');
+    a.href = url; a.download = ultimo.archivo;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    avisoReporte('Archivo descargado: ' + ultimo.archivo);
+  });
+  $('btnCopiar').addEventListener('click', async () => {
+    if (!ultimo) return;
+    try { await navigator.clipboard.writeText(ultimo.texto); avisoReporte('✓ Reporte copiado. Pégalo donde quieras.'); }
+    catch (e) {
+      const t = document.createElement('textarea'); t.value = ultimo.texto; document.body.appendChild(t);
+      t.select(); try { document.execCommand('copy'); avisoReporte('✓ Reporte copiado.'); } catch (e2) { avisoReporte('No se pudo copiar.', 'error'); }
+      t.remove();
+    }
+  });
+
+  // ---------- Inicio ----------
+  renderAreas();
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+})();
+</script>
+</body>
+</html>
