@@ -137,8 +137,8 @@ nav button.activo{color:var(--pri);background:color-mix(in srgb,var(--pri) 9%,tr
 </style>
 <style>
 body{position:relative;isolation:isolate;background:radial-gradient(ellipse at 12% 8%,rgba(45,105,190,.09),transparent 34%),radial-gradient(ellipse at 90% 60%,rgba(38,130,115,.06),transparent 32%),var(--bg)}
-body:before{content:"";position:fixed;z-index:-1;pointer-events:none;inset:0;background:url("icon-512.png") no-repeat center 56%/min(78vw,440px);opacity:.045;filter:grayscale(1)}
-@media(prefers-color-scheme:dark){body:before{opacity:.07;filter:grayscale(1) brightness(1.8)}}
+body:before{content:"";position:fixed;z-index:-1;pointer-events:none;inset:0;background:url("icon-512.png") no-repeat center 54%/min(94vw,820px);opacity:.105;filter:saturate(1.8) hue-rotate(5deg)}
+@media(prefers-color-scheme:dark){body:before{opacity:.13;filter:saturate(1.7) brightness(1.25)}}
 header{background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(18px)}
 main{padding-top:20px}
 .hero{position:relative;overflow:hidden;color:#fff;border:0;background:linear-gradient(125deg,#123b80,#1d5bb0 62%,#267c9d);padding:22px;box-shadow:0 14px 32px #123b8028}
@@ -157,7 +157,7 @@ main{padding-top:20px}
 #rangoInfo{background:color-mix(in srgb,var(--pri) 7%,var(--card));border:1px solid var(--borde);padding:11px;border-radius:13px;font-weight:650}
 .report-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}.report-head img{width:38px;height:38px;border-radius:11px}.report-head strong{display:block;font-size:14px}.report-head small{color:var(--muted);font-size:11px}
 @media(max-width:380px){.stats{gap:6px}.stat{padding:12px 8px}.stat strong{font-size:21px}.stat span{font-size:9px}.hero h2{font-size:21px!important}}
-@media(min-width:760px){body:before{background-size:360px;background-position:calc(50% + 260px) 52%}}
+@media(min-width:760px){body:before{background-size:min(72vw,900px);background-position:calc(50% + 210px) 52%}}
 </style>
 <style>
 /* Diseño adaptable para pantallas grandes, medianas y móviles */
@@ -167,9 +167,12 @@ section.activa{min-width:0}
 #v-areas{display:none}
 #v-areas.activa{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.85fr);gap:0 18px;align-items:start}
 #v-areas .hero,#v-areas .stats,#v-areas .seccion-titulo:nth-of-type(1),#v-areas .accesos{grid-column:1}
-#v-areas > .seccion-titulo:nth-of-type(5),#v-areas > .card:nth-of-type(6),#v-areas > .card:nth-of-type(7){grid-column:2}
+#v-areas > .seccion-titulo:nth-of-type(5),#v-areas > .areas-logo,#v-areas > .card:nth-of-type(7),#v-areas > .card:nth-of-type(8){grid-column:2}
 #v-areas > .seccion-titulo:nth-of-type(5){grid-row:1}
-#v-areas > .card:nth-of-type(6){grid-row:2}#v-areas > .card:nth-of-type(7){grid-row:3}
+#v-areas > .areas-logo{grid-row:2}
+#v-areas > .card:nth-of-type(7){grid-row:3}#v-areas > .card:nth-of-type(8){grid-row:4}
+.areas-logo{min-height:112px;display:flex;align-items:center;justify-content:center;overflow:hidden;pointer-events:none}
+.areas-logo img{display:block;width:clamp(100px,12vw,150px);height:auto;object-fit:contain;opacity:.9;filter:drop-shadow(0 8px 16px rgba(22,70,160,.18))}
 #v-evento.activa{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:0 18px;align-items:start}
 #v-evento .card:first-child{grid-column:1;grid-row:1 / span 2}
 #v-evento #previa{grid-column:2;grid-row:1}
@@ -188,7 +191,7 @@ section.activa{min-width:0}
  main{max-width:820px}
  #v-areas.activa,#v-evento.activa,#v-reporte.activa,#v-reuniones.activa{display:block}
  #v-historial.activa{display:block}
- #v-areas .seccion-titulo:nth-of-type(2),#v-areas .card:nth-of-type(3),#v-areas .card:nth-of-type(4){grid-column:auto;grid-row:auto}
+ #v-areas .seccion-titulo:nth-of-type(2),#v-areas .areas-logo,#v-areas .card:nth-of-type(3),#v-areas .card:nth-of-type(4){grid-column:auto;grid-row:auto}
  #v-reporte .col{margin-top:12px}
  #v-reuniones textarea{min-height:230px}
 }
@@ -232,6 +235,7 @@ section.activa{min-width:0}
       <button class="acceso" type="button" data-go="areas-admin"><span class="acceso-icon">⚙️</span><span><b>Configurar áreas</b><small>Administrar la planta</small></span></button>
     </div>
     <div class="seccion-titulo"><h2>Áreas de la planta</h2></div>
+    <div class="areas-logo" aria-hidden="true"><img src="icon-512.png" alt=""></div>
     <div class="card">
       <h2>Agregar área</h2>
       <div class="fila">
