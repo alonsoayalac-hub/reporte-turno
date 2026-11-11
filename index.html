@@ -557,6 +557,99 @@ section.activa{min-width:0}
 }
 </style>
 
+
+<style>
+/* Acceso destacado a Apuntes y nueva composición del bloque rápido */
+@media (min-width:901px) {
+  #v-areas > .accesos {
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    grid-template-rows:repeat(2,minmax(96px,auto));
+    gap:12px !important;
+  }
+  #v-areas .acceso:not(.acceso-apuntes) {
+    min-height:96px !important;
+    height:100%;
+    align-items:center;
+    padding:15px !important;
+  }
+  #v-areas .acceso:nth-child(1) {grid-column:1;grid-row:1}
+  #v-areas .acceso:nth-child(2) {grid-column:2;grid-row:1}
+  #v-areas .acceso:nth-child(3) {grid-column:1;grid-row:2}
+  #v-areas .acceso:nth-child(4) {grid-column:2;grid-row:2}
+  #v-areas .acceso-apuntes {
+    grid-column:3 !important;
+    grid-row:1 / span 2 !important;
+    min-height:204px !important;
+    height:100%;
+    padding:22px 18px !important;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:center;
+    gap:16px !important;
+    color:#fff !important;
+    background:linear-gradient(145deg,#1646a0,#2676ad) !important;
+    border:1px solid rgba(255,255,255,.18) !important;
+    border-radius:18px !important;
+    box-shadow:0 10px 24px rgba(22,70,160,.19) !important;
+    position:relative;
+    overflow:hidden;
+  }
+  #v-areas .acceso-apuntes:after {
+    content:"";
+    position:absolute;
+    width:150px;height:150px;
+    right:-48px;bottom:-58px;
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:50%;
+    box-shadow:0 0 0 18px rgba(255,255,255,.045),0 0 0 38px rgba(255,255,255,.035);
+    pointer-events:none;
+  }
+  #v-areas .acceso-apuntes .acceso-icon {
+    width:58px;height:58px;flex:0 0 58px;
+    font-size:29px;
+    color:#1646a0;
+    background:#fff;
+    border-radius:17px;
+  }
+  #v-areas .acceso-apuntes b {font-size:17px;line-height:1.3;color:#fff}
+  #v-areas .acceso-apuntes small {font-size:12px;line-height:1.5;color:rgba(255,255,255,.82);max-width:190px}
+  #v-areas .acceso-flecha {
+    position:absolute;right:17px;top:17px;
+    font-size:23px;line-height:1;color:#fff;opacity:.9;
+  }
+}
+@media (min-width:901px) and (max-width:1120px) {
+  #v-areas > .accesos {grid-template-columns:repeat(2,minmax(0,1fr)) !important;grid-template-rows:auto !important}
+  #v-areas .acceso:nth-child(1),
+  #v-areas .acceso:nth-child(2),
+  #v-areas .acceso:nth-child(3),
+  #v-areas .acceso:nth-child(4) {grid-column:auto;grid-row:auto}
+  #v-areas .acceso-apuntes {
+    grid-column:1 / -1 !important;
+    grid-row:auto !important;
+    min-height:120px !important;
+    flex-direction:row;
+    align-items:center;
+  }
+  #v-areas .acceso-apuntes small {max-width:none}
+}
+@media (max-width:900px) {
+  #v-areas .acceso-apuntes {
+    grid-column:1 / -1;
+    min-height:104px;
+    justify-content:flex-start;
+    background:linear-gradient(110deg,#1646a0,#2676ad);
+    color:#fff;
+    border-color:rgba(22,70,160,.2);
+  }
+  #v-areas .acceso-apuntes b {color:#fff}
+  #v-areas .acceso-apuntes small {color:rgba(255,255,255,.85)}
+  #v-areas .acceso-apuntes .acceso-icon {background:#fff;color:#1646a0}
+  #v-areas .acceso-flecha {margin-left:auto;font-size:22px}
+}
+</style>
+
 </head>
 <body>
 <header><div class="marca"><img src="icon-192.png" alt="Logo de Reporte de Turno"><div class="marca-texto"><h1 id="titulo">Áreas</h1><p class="subtitulo">OPERACIONES · REPORTE DE TURNO</p></div></div></header>
@@ -580,6 +673,7 @@ section.activa{min-width:0}
       <button class="acceso" type="button" data-go="historial"><span class="acceso-icon">📋</span><span><b>Ver historial</b><small>Consultar registros</small></span></button>
       <button class="acceso" type="button" data-go="reporte"><span class="acceso-icon">📄</span><span><b>Generar reporte</b><small>Compartir el turno</small></span></button>
       <button class="acceso" type="button" data-go="areas-admin"><span class="acceso-icon">⚙️</span><span><b>Configurar áreas</b><small>Administrar la planta</small></span></button>
+      <button class="acceso acceso-apuntes" type="button" data-go="reuniones"><span class="acceso-icon">📝</span><span><b>Apuntes de reunión</b><small>Guardar acuerdos, temas y compromisos</small></span><span class="acceso-flecha">→</span></button>
     </div>
     <div class="seccion-titulo"><h2>Áreas de la planta</h2></div>
     <div class="areas-logo" aria-hidden="true"><img src="icon-200.png" alt=""></div>
