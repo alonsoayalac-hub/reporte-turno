@@ -1,10 +1,11 @@
 /* Service worker: permite abrir la app sin internet después de la primera carga. */
-const CACHE = 'reporte-turno-v2';
+const CACHE = 'reporte-turno-v3';
 const ARCHIVOS = [
   './',
   './index.html',
   './logica.js',
   './manifest.webmanifest',
+  './icon-180.png',
   './icon-192.png',
   './icon-512.png',
 ];
