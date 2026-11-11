@@ -246,6 +246,32 @@ section.activa{min-width:0}
 @media(max-width:900px){
   .card{margin-bottom:12px}
 }
+
+/* Evitar tarjetas estiradas y huecos artificiales en escritorio */
+@media(min-width:901px){
+  #v-areas.activa,
+  #v-evento.activa,
+  #v-reporte.activa,
+  #v-historial.activa,
+  #v-reuniones.activa{
+    align-items:start;
+    align-content:start;
+    grid-auto-rows:min-content;
+  }
+  #v-areas > *,
+  #v-evento > *,
+  #v-reporte > *,
+  #v-historial > *,
+  #v-reuniones > *{
+    align-self:start;
+    min-height:0;
+  }
+  #v-historial.activa{grid-auto-flow:row;align-items:start}
+  #v-historial .card{height:auto;min-height:0}
+  #v-evento .card{height:auto}
+  #v-reporte .card{height:auto}
+  #v-reuniones .card{height:auto}
+}
 </style>
 </head>
 <body>
