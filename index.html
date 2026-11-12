@@ -673,6 +673,16 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
 #syncStatus{font-size:10px;color:var(--muted);white-space:nowrap}
 @media(max-width:600px){.auth-card{padding:24px 20px}.account-bar span{display:none}.account-bar{gap:6px}.account-bar button{padding:6px 9px;min-height:34px;font-size:11px}#syncStatus{display:none}}
 </style>
+
+<style>
+.backup-modal{position:fixed;inset:0;z-index:70;background:#081223a8;backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:14px}
+.backup-caja{width:min(100%,620px);max-height:90vh;overflow:auto;background:var(--card);color:var(--txt);border:1px solid var(--borde);border-radius:22px;padding:20px;box-shadow:0 24px 70px #08122355}
+.backup-cabecera{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.backup-cabecera h2{font-size:20px;margin:0 0 4px}.backup-cabecera p{font-size:13px;color:var(--muted);margin:0}
+.backup-info{display:flex;flex-direction:column;gap:4px;background:color-mix(in srgb,var(--pri) 7%,var(--card));border:1px solid var(--borde);border-radius:13px;padding:12px;margin-top:15px;font-size:13px}.backup-info span{color:var(--muted);line-height:1.45}
+.backup-caja h3{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:18px 0 8px}.backup-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--borde)}.backup-detalle{flex:1;min-width:0}.backup-detalle strong{display:block;font-size:13px}.backup-detalle small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.backup-acciones{display:flex;gap:6px;flex-wrap:wrap}.backup-acciones button{min-height:36px;padding:6px 9px;font-size:11px}
+@media(max-width:480px){.backup-caja{padding:16px;border-radius:18px}.backup-item{align-items:flex-start;flex-direction:column}.backup-acciones{width:100%}.backup-acciones button{flex:1}}
+</style>
+
 </head>
 <body class="auth-locked">
 <div id="authScreen" role="dialog" aria-modal="true" aria-labelledby="authTitle">
@@ -712,6 +722,7 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
       <button class="acceso" type="button" data-go="historial"><span class="acceso-icon">📋</span><span><b>Ver historial</b><small>Consultar registros</small></span></button>
       <button class="acceso" type="button" data-go="reporte"><span class="acceso-icon">📄</span><span><b>Generar reporte</b><small>Compartir el turno</small></span></button>
       <button class="acceso" type="button" data-go="areas-admin"><span class="acceso-icon">⚙️</span><span><b>Configurar áreas</b><small>Administrar la planta</small></span></button>
+      <button class="acceso" type="button" id="btnAbrirRespaldos"><span class="acceso-icon">🛟</span><span><b>Respaldos</b><small>Recuperar o descargar información</small></span></button>
       <button class="acceso acceso-apuntes" type="button" data-go="reuniones"><span class="acceso-icon">📝</span><span><b>Apuntes de reunión</b><small>Guardar acuerdos, temas y compromisos</small></span><span class="acceso-flecha">→</span></button>
     </div>
     <div class="seccion-titulo"><h2>Áreas de la planta</h2></div>
@@ -806,6 +817,19 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
   <button data-tab="reuniones"><span>📝</span>Apuntes</button>
 </nav>
 
+
+<!-- RESPALDOS AUTOMÁTICOS -->
+<div id="backupModal" class="backup-modal" hidden>
+  <div class="backup-caja" role="dialog" aria-modal="true" aria-labelledby="backupTitulo">
+    <div class="backup-cabecera"><div><h2 id="backupTitulo">Respaldos de información</h2><p>Copias privadas de tus áreas, eventos y apuntes.</p></div><button type="button" class="mini" id="btnCerrarRespaldos" aria-label="Cerrar">✕</button></div>
+    <div class="backup-info"><strong>Respaldo automático</strong><span>Se crea una copia en la nube al menos cada 24 horas cuando guardas cambios. Se conservan las últimas 30 copias.</span></div>
+    <button type="button" id="btnCrearRespaldo" class="sec" style="width:100%;margin:12px 0">＋ Crear respaldo ahora</button>
+    <div id="backupMsg" class="msg muted" aria-live="polite"></div>
+    <h3>Copias disponibles</h3><div id="backupList"><div class="vacio">Cargando respaldos…</div></div>
+    <p class="muted">Antes de restaurar, la aplicación guardará una copia de los datos actuales.</p>
+  </div>
+</div>
+
 <!-- EDITAR EVENTO -->
 <div id="modal" hidden>
   <div class="modal-caja">
@@ -871,8 +895,159 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
       return;
     }
     ultimaActualizacionNube = Date.parse(momento);
-    estadoSync('Sincronizado');
+    const respaldoOk = await asegurarRespaldoAutomatico();
+    if (respaldoOk) estadoSync('Sincronizado');
   }
+  // ---------- Respaldos automáticos y recuperación ----------
+  let cargandoRespaldos = false;
+  const LIMITE_RESPALDOS = 30;
+  const DURACION_RESPALDO = 24 * 60 * 60 * 1000;
+
+  function datosParaRespaldo() {
+    return {
+      areas: JSON.parse(JSON.stringify(areas)),
+      eventos: JSON.parse(JSON.stringify(eventos)),
+      reuniones: JSON.parse(JSON.stringify(reuniones))
+    };
+  }
+
+  async function crearRespaldoNube(forzar = false) {
+    if (!usuarioActual) throw new Error('Inicia sesión para crear un respaldo.');
+    const usuarioId = usuarioActual.id;
+    const tabla = supabaseClient.from('user_app_backups');
+    if (!forzar) {
+      const { data, error } = await tabla.select('created_at').eq('user_id', usuarioId)
+        .order('created_at', { ascending: false }).limit(1);
+      if (error) throw error;
+      const ultimo = data && data.length ? Date.parse(data[0].created_at) : 0;
+      if (ultimo && Date.now() - ultimo < DURACION_RESPALDO) return { creado: false };
+    }
+    const { error: insertError } = await tabla.insert({
+      user_id: usuarioId,
+      snapshot: datosParaRespaldo()
+    });
+    if (insertError) throw insertError;
+
+    // Mantener únicamente las 30 copias más recientes de esta cuenta.
+    const { data: antiguas, error: listaError } = await tabla.select('id')
+      .eq('user_id', usuarioId).order('created_at', { ascending: false })
+      .range(LIMITE_RESPALDOS, 1000);
+    if (!listaError && antiguas && antiguas.length) {
+      await tabla.delete().eq('user_id', usuarioId).in('id', antiguas.map(x => x.id));
+    }
+    return { creado: true };
+  }
+
+  function mensajeRespaldo(texto, clase = 'muted') {
+    const el = $('backupMsg');
+    if (el) { el.className = 'msg ' + clase; el.textContent = texto; }
+  }
+
+  function fechaRespaldo(valor) {
+    const d = new Date(valor);
+    return d.toLocaleString('es-CL', { dateStyle: 'medium', timeStyle: 'short' });
+  }
+
+  async function asegurarRespaldoAutomatico() {
+    if (!usuarioActual) return;
+    try {
+      await crearRespaldoNube(false);
+      return true;
+    } catch (error) {
+      console.error('No se pudo crear el respaldo automático:', error);
+      estadoSync('Sincronizado · respaldo pendiente', 'error');
+      return false;
+    }
+  }
+
+  async function listarRespaldos() {
+    if (!usuarioActual || cargandoRespaldos) return;
+    cargandoRespaldos = true;
+    $('backupList').innerHTML = '<div class="vacio">Consultando copias guardadas…</div>';
+    const { data, error } = await supabaseClient.from('user_app_backups')
+      .select('id,created_at,snapshot').eq('user_id', usuarioActual.id)
+      .order('created_at', { ascending: false }).limit(LIMITE_RESPALDOS);
+    cargandoRespaldos = false;
+    if (error) {
+      $('backupList').innerHTML = '<div class="vacio">No se pudieron consultar los respaldos. Comprueba que ejecutaste la actualización SQL de respaldos en Supabase.</div>';
+      mensajeRespaldo('No se pudo acceder a la tabla de respaldos: ' + error.message, 'error');
+      return;
+    }
+    if (!data || !data.length) {
+      $('backupList').innerHTML = '<div class="vacio">Todavía no hay copias. Se creará una automáticamente al guardar cambios o puedes crear una ahora.</div>';
+      return;
+    }
+    $('backupList').innerHTML = data.map((b, i) => {
+      const conteo = b.snapshot || {};
+      const resumen = (Array.isArray(conteo.eventos) ? conteo.eventos.length : 0) + ' eventos · ' +
+        (Array.isArray(conteo.areas) ? conteo.areas.length : 0) + ' áreas · ' +
+        (Array.isArray(conteo.reuniones) ? conteo.reuniones.length : 0) + ' apuntes';
+      return '<div class="backup-item" data-backup-id="' + esc(String(b.id)) + '">' +
+        '<div class="backup-detalle"><strong>' + (i === 0 ? 'Último respaldo' : 'Respaldo guardado') + '</strong>' +
+        '<small>' + esc(fechaRespaldo(b.created_at)) + ' · ' + esc(resumen) + '</small></div>' +
+        '<div class="backup-acciones"><button type="button" class="mini" data-backup-accion="descargar">Descargar</button>' +
+        '<button type="button" class="sec" data-backup-accion="restaurar">Restaurar</button></div></div>';
+    }).join('');
+  }
+
+  async function abrirRespaldos() {
+    $('backupModal').hidden = false;
+    mensajeRespaldo('');
+    await listarRespaldos();
+  }
+  function cerrarRespaldos() { $('backupModal').hidden = true; }
+  $('btnAbrirRespaldos').addEventListener('click', abrirRespaldos);
+  $('btnCerrarRespaldos').addEventListener('click', cerrarRespaldos);
+  $('backupModal').addEventListener('click', e => { if (e.target === $('backupModal')) cerrarRespaldos(); });
+
+  $('btnCrearRespaldo').addEventListener('click', async () => {
+    const b = $('btnCrearRespaldo');
+    b.disabled = true; mensajeRespaldo('Creando copia segura en la nube…');
+    try {
+      await crearRespaldoNube(true);
+      mensajeRespaldo('✓ Respaldo creado correctamente.', 'ok');
+      await listarRespaldos();
+    } catch (error) {
+      mensajeRespaldo('No se pudo crear el respaldo: ' + error.message, 'error');
+    } finally { b.disabled = false; }
+  });
+
+  $('backupList').addEventListener('click', async e => {
+    const b = e.target.closest('button[data-backup-accion]');
+    if (!b) return;
+    const item = b.closest('.backup-item');
+    const id = item && item.dataset.backupId;
+    if (!id || !usuarioActual) return;
+    b.disabled = true;
+    try {
+      const { data, error } = await supabaseClient.from('user_app_backups')
+        .select('id,created_at,snapshot').eq('user_id', usuarioActual.id).eq('id', id).maybeSingle();
+      if (error || !data) throw error || new Error('No se encontró esa copia.');
+      const snap = data.snapshot || {};
+      if (!Array.isArray(snap.areas) || !Array.isArray(snap.eventos) || !Array.isArray(snap.reuniones)) {
+        throw new Error('El contenido del respaldo no tiene un formato válido.');
+      }
+      if (b.dataset.backupAccion === 'descargar') {
+        const blob = new Blob([JSON.stringify({ version: 1, created_at: data.created_at, ...snap }, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'Respaldo_Reporte_Turno_' + new Date(data.created_at).toISOString().slice(0, 10) + '.json';
+        document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1500);
+        mensajeRespaldo('✓ Copia descargada en este dispositivo.', 'ok');
+        return;
+      }
+      if (!confirm('¿Restaurar la copia del ' + fechaRespaldo(data.created_at) + '? Los datos actuales serán reemplazados. Antes se guardará un respaldo de los datos actuales.')) return;
+      await crearRespaldoNube(true);
+      areas = snap.areas; eventos = snap.eventos; reuniones = snap.reuniones;
+      renderAreas(); renderSelectorAreas(); renderPrevia(); renderHistorial(); renderReuniones(); renderReporte();
+      programarGuardadoNube();
+      mensajeRespaldo('✓ Datos restaurados. Se están sincronizando con tu cuenta.', 'ok');
+      await listarRespaldos();
+    } catch (error) {
+      mensajeRespaldo('No se pudo completar la operación: ' + error.message, 'error');
+    } finally { b.disabled = false; }
+  });
+
   async function cargarDatosNube(usuario) {
     cargandoDatos = true;
     estadoSync('Cargando datos…');
