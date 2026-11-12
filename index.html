@@ -995,6 +995,36 @@ nav{z-index:40}
   #cardAdminAreas{grid-column:8/span 5!important;grid-row:6!important}
 }
 </style>
+
+<style id="areas-planta-redisenio-v24">
+/* Áreas de planta: imagen protagonista y administración unificada */
+#v-areas > #areasPlantaHeading{grid-column:1/-1!important;grid-row:auto!important;margin:8px 2px 4px}
+#v-areas > #cardAdminAreas{grid-column:1/-1!important;grid-row:auto!important;width:100%;display:grid;grid-template-columns:minmax(280px,.95fr) minmax(0,1.35fr);gap:22px;align-items:center;padding:clamp(16px,2.2vw,28px)!important}
+#cardAdminAreas .areas-logo{grid-column:1;grid-row:1;min-height:340px!important;height:100%;margin:0!important;padding:20px!important;display:flex;align-items:center;justify-content:center;border-radius:18px}
+#cardAdminAreas .areas-logo img{width:100%!important;max-width:520px!important;max-height:420px!important;height:auto;object-fit:contain}
+#cardAdminAreas .areas-panel-contenido{grid-column:2;min-width:0;display:flex;flex-direction:column;gap:20px}
+#cardAdminAreas .areas-agregar{padding:0 0 18px;border-bottom:1px solid var(--borde)}
+#cardAdminAreas .areas-agregar h2,#cardAdminAreas .areas-listado h2{margin:0 0 12px;font-size:13px;letter-spacing:.045em;color:var(--pri);text-transform:uppercase}
+#cardAdminAreas .areas-agregar .fila{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
+#cardAdminAreas .areas-agregar input{min-width:0}
+#cardAdminAreas .areas-listado ul.lista li{min-height:58px;padding:9px 2px}
+#cardAdminAreas .areas-listado ul.lista li:first-child{border-top:0}
+#cardAdminAreas .areas-listado .nombre{font-size:15px}
+@media(max-width:900px){
+ #v-areas > #areasPlantaHeading{margin-top:14px}
+ #v-areas > #cardAdminAreas{display:flex;flex-direction:column;gap:16px;align-items:stretch}
+ #cardAdminAreas .areas-logo{width:100%;min-height:280px!important;height:auto;padding:16px!important}
+ #cardAdminAreas .areas-logo img{width:min(100%,420px)!important;max-height:340px!important}
+ #cardAdminAreas .areas-panel-contenido{width:100%;gap:18px}
+}
+@media(max-width:520px){
+ #v-areas > #cardAdminAreas{padding:14px!important}
+ #cardAdminAreas .areas-logo{min-height:230px!important;padding:10px!important}
+ #cardAdminAreas .areas-logo img{width:min(100%,330px)!important;max-height:270px!important}
+ #cardAdminAreas .areas-agregar .fila{grid-template-columns:1fr}
+ #cardAdminAreas .areas-agregar .fila button{width:100%}
+}
+</style>
 </head>
 <body class="auth-locked">
 <div id="authScreen" role="dialog" aria-modal="true" aria-labelledby="authTitle">
@@ -1040,17 +1070,22 @@ nav{z-index:40}
     </div>
     <div class="card dashboard-reuniones" id="dashboardReuniones"><div class="dashboard-reuniones-head"><div><h2>Últimas reuniones</h2><p>Acceso rápido a tus apuntes recientes</p></div><button type="button" class="mini sec" data-go="reuniones">Ver todas</button></div><div id="dashboardReunionesLista"><div class="muted">Cargando reuniones…</div></div></div>
     <div class="seccion-titulo" id="areasPlantaHeading"><h2>Áreas de la planta</h2></div>
-    <div class="areas-logo" aria-hidden="true"><img src="icon-200.png" alt=""></div>
-    <div class="card" id="cardAgregarArea">
-      <h2>Agregar área</h2>
-      <div class="fila">
-        <input type="text" id="areaNueva" placeholder="Ej: CHANCADO" autocapitalize="characters" autocomplete="off">
-        <button id="btnAgregarArea">Agregar</button>
-      </div>
-      <div id="areaMsg" class="msg error"></div>
-    </div>
     <div class="card" id="cardAdminAreas">
-      <h2>Administración de áreas</h2><div id="listaAreas"></div>
+      <div class="areas-logo" aria-hidden="true"><img src="icon-200.png" alt=""></div>
+      <div class="areas-panel-contenido">
+        <div class="areas-agregar" id="cardAgregarArea">
+          <h2>Agregar área</h2>
+          <div class="fila">
+            <input type="text" id="areaNueva" placeholder="Ej: CHANCADO" autocapitalize="characters" autocomplete="off">
+            <button id="btnAgregarArea">Agregar</button>
+          </div>
+          <div id="areaMsg" class="msg error"></div>
+        </div>
+        <div class="areas-listado">
+          <h2>Áreas registradas</h2>
+          <div id="listaAreas"></div>
+        </div>
+      </div>
     </div>
   </section>
 
