@@ -683,6 +683,25 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
 @media(max-width:480px){.backup-caja{padding:16px;border-radius:18px}.backup-item{align-items:flex-start;flex-direction:column}.backup-acciones{width:100%}.backup-acciones button{flex:1}}
 </style>
 
+
+<style>
+/* Pendientes del turno anterior */
+#v-pendientes.activa{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:0 16px;align-items:start}
+#v-pendientes .pendientes-editor{grid-column:1}#v-pendientes .pendientes-lista{grid-column:2}
+.pendientes-cabecera{display:flex;align-items:center;justify-content:space-between;gap:10px}.pendientes-cabecera h2{margin:0}
+.pendiente-item{padding:14px 0;border-top:1px solid var(--borde)}.pendiente-item:first-child{border-top:0}
+.pendiente-descripcion{font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;font-weight:650}
+.pendiente-meta{font-size:11px;color:var(--muted);margin-top:6px}
+.pendiente-controles{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.pendiente-controles select{flex:1;min-width:145px;min-height:42px;padding:8px 10px;font-size:13px}
+.pendiente-controles button{min-height:40px;padding:7px 10px;font-size:12px}
+.estado-pendiente{display:inline-flex;align-items:center;border-radius:20px;padding:5px 9px;font-size:10px;font-weight:800;background:color-mix(in srgb,var(--aviso) 12%,var(--card));color:var(--aviso)}
+.estado-pendiente.en-curso{background:color-mix(in srgb,var(--pri) 12%,var(--card));color:var(--pri)}
+.estado-pendiente.listo{background:color-mix(in srgb,var(--verde) 13%,var(--card));color:var(--verde)}
+@media(max-width:900px){#v-pendientes.activa{display:block}}
+@media(min-width:760px){nav{grid-template-columns:repeat(6,1fr)}}
+</style>
+
 </head>
 <body class="auth-locked">
 <div id="authScreen" role="dialog" aria-modal="true" aria-labelledby="authTitle">
@@ -722,6 +741,7 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
       <button class="acceso" type="button" data-go="historial"><span class="acceso-icon">📋</span><span><b>Ver historial</b><small>Consultar registros</small></span></button>
       <button class="acceso" type="button" data-go="reporte"><span class="acceso-icon">📄</span><span><b>Generar reporte</b><small>Compartir el turno</small></span></button>
       <button class="acceso" type="button" data-go="areas-admin"><span class="acceso-icon">⚙️</span><span><b>Configurar áreas</b><small>Administrar la planta</small></span></button>
+      <button class="acceso" type="button" data-go="pendientes"><span class="acceso-icon">📌</span><span><b>Pendientes del turno</b><small>Seguimiento de tareas anteriores</small></span></button>
       <button class="acceso" type="button" id="btnAbrirRespaldos"><span class="acceso-icon">🛟</span><span><b>Respaldos</b><small>Recuperar o descargar información</small></span></button>
       <button class="acceso acceso-apuntes" type="button" data-go="reuniones"><span class="acceso-icon">📝</span><span><b>Apuntes de reunión</b><small>Guardar acuerdos, temas y compromisos</small></span><span class="acceso-flecha">→</span></button>
     </div>
@@ -783,6 +803,24 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     <div id="repMsg" class="msg"></div>
   </section>
 
+  <!-- PENDIENTES DEL TURNO ANTERIOR -->
+  <section id="v-pendientes">
+    <div class="card pendientes-editor">
+      <h2>Registrar pendiente</h2>
+      <label for="pendienteTexto">Descripción del pendiente</label>
+      <textarea id="pendienteTexto" maxlength="600" placeholder="Describe el trabajo que quedó pendiente del turno anterior..." style="min-height:110px"></textarea>
+      <label for="pendienteResponsable" style="margin-top:12px">Responsable (opcional)</label>
+      <input type="text" id="pendienteResponsable" maxlength="100" placeholder="Nombre del responsable o área">
+      <button id="btnGuardarPendiente" class="verde" style="width:100%;margin-top:14px">＋ Agregar pendiente</button>
+      <div id="pendienteMsg" class="msg" aria-live="polite"></div>
+      <p class="muted">Los pendientes se guardan en tu cuenta y se sincronizan entre tus dispositivos.</p>
+    </div>
+    <div class="card pendientes-lista">
+      <div class="pendientes-cabecera"><h2>Pendientes registrados</h2><span id="pendientesContador" class="muted">0 pendientes</span></div>
+      <div id="listaPendientes"><div class="vacio">Todavía no hay pendientes registrados.</div></div>
+    </div>
+  </section>
+
   <!-- APUNTES DE REUNIÓN -->
   <section id="v-reuniones">
     <div class="card reunion-editor">
@@ -815,6 +853,7 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
   <button data-tab="historial"><span>📋</span>Historial</button>
   <button data-tab="reporte"><span>📄</span>Reporte</button>
   <button data-tab="reuniones"><span>📝</span>Apuntes</button>
+  <button data-tab="pendientes"><span>📌</span>Pendientes</button>
 </nav>
 
 
@@ -865,7 +904,7 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true }
   });
-  let areas = [], eventos = [], reuniones = [];
+  let areas = [], eventos = [], reuniones = [], pendientes = [];
   let usuarioActual = null, guardadoPendiente = null, cargandoDatos = false;
   let ultimaActualizacionNube = 0, ultimoCambioLocal = 0, intervaloSync = null;
 
@@ -887,7 +926,7 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     if (!usuarioActual || cargandoDatos) return;
     const usuarioId = usuarioActual.id;
     const momento = new Date().toISOString();
-    const payload = { user_id: usuarioId, areas, eventos, reuniones, updated_at: momento };
+    const payload = { user_id: usuarioId, areas, eventos, reuniones, pendientes, updated_at: momento };
     const { error } = await supabaseClient.from('user_app_data').upsert(payload, { onConflict: 'user_id' });
     if (error) {
       console.error('Error sincronizando datos:', error);
@@ -907,7 +946,8 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     return {
       areas: JSON.parse(JSON.stringify(areas)),
       eventos: JSON.parse(JSON.stringify(eventos)),
-      reuniones: JSON.parse(JSON.stringify(reuniones))
+      reuniones: JSON.parse(JSON.stringify(reuniones)),
+      pendientes: JSON.parse(JSON.stringify(pendientes))
     };
   }
 
@@ -1038,8 +1078,8 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
       }
       if (!confirm('¿Restaurar la copia del ' + fechaRespaldo(data.created_at) + '? Los datos actuales serán reemplazados. Antes se guardará un respaldo de los datos actuales.')) return;
       await crearRespaldoNube(true);
-      areas = snap.areas; eventos = snap.eventos; reuniones = snap.reuniones;
-      renderAreas(); renderSelectorAreas(); renderPrevia(); renderHistorial(); renderReuniones(); renderReporte();
+      areas = snap.areas; eventos = snap.eventos; reuniones = snap.reuniones; pendientes = Array.isArray(snap.pendientes) ? snap.pendientes : [];
+      renderAreas(); renderSelectorAreas(); renderPrevia(); renderHistorial(); renderReuniones(); renderPendientes(); renderReporte();
       programarGuardadoNube();
       mensajeRespaldo('✓ Datos restaurados. Se están sincronizando con tu cuenta.', 'ok');
       await listarRespaldos();
@@ -1052,21 +1092,22 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     cargandoDatos = true;
     estadoSync('Cargando datos…');
     const { data, error } = await supabaseClient.from('user_app_data')
-      .select('areas,eventos,reuniones,updated_at').eq('user_id', usuario.id).maybeSingle();
+      .select('areas,eventos,reuniones,pendientes,updated_at').eq('user_id', usuario.id).maybeSingle();
     if (error) { cargandoDatos = false; throw error; }
     if (data) {
       areas = Array.isArray(data.areas) ? data.areas : [];
       eventos = Array.isArray(data.eventos) ? data.eventos : [];
       reuniones = Array.isArray(data.reuniones) ? data.reuniones : [];
+      pendientes = Array.isArray(data.pendientes) ? data.pendientes : [];
       ultimaActualizacionNube = Date.parse(data.updated_at || '') || 0;
     } else {
-      areas = []; eventos = []; reuniones = [];
-      const { error: insertError } = await supabaseClient.from('user_app_data').insert({ user_id: usuario.id, areas: [], eventos: [], reuniones: [] });
+      areas = []; eventos = []; reuniones = []; pendientes = [];
+      const { error: insertError } = await supabaseClient.from('user_app_data').insert({ user_id: usuario.id, areas: [], eventos: [], reuniones: [], pendientes: [] });
       if (insertError) { cargandoDatos = false; throw insertError; }
       ultimaActualizacionNube = Date.now();
     }
     cargandoDatos = false;
-    renderAreas(); renderSelectorAreas(); renderPrevia(); renderHistorial(); renderReuniones(); renderReporte();
+    renderAreas(); renderSelectorAreas(); renderPrevia(); renderHistorial(); renderReuniones(); renderPendientes(); renderReporte();
     estadoSync('Sincronizado');
   }
   async function activarSesion(session) {
@@ -1098,7 +1139,7 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     if (!usuarioActual || guardadoPendiente || cargandoDatos) return;
     const usuarioId = usuarioActual.id;
     const { data, error } = await supabaseClient.from('user_app_data')
-      .select('areas,eventos,reuniones,updated_at').eq('user_id', usuarioId).maybeSingle();
+      .select('areas,eventos,reuniones,pendientes,updated_at').eq('user_id', usuarioId).maybeSingle();
     if (error || !data) return;
     const fechaNube = Date.parse(data.updated_at || '') || 0;
     if (fechaNube <= ultimaActualizacionNube || ultimoCambioLocal > ultimaActualizacionNube) return;
@@ -1108,7 +1149,7 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     reuniones = Array.isArray(data.reuniones) ? data.reuniones : [];
     ultimaActualizacionNube = fechaNube;
     cargandoDatos = false;
-    renderAreas(); renderSelectorAreas(); renderPrevia(); renderHistorial(); renderReuniones(); renderReporte();
+    renderAreas(); renderSelectorAreas(); renderPrevia(); renderHistorial(); renderReuniones(); renderPendientes(); renderReporte();
     estadoSync('Actualizado');
   }
   function mostrarMensajeAuth(texto, clase) {
@@ -1178,7 +1219,7 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
   }
 
   // ---------- Pestañas ----------
-  const TITULOS = { areas: 'Inicio', evento: 'Nuevo evento', historial: 'Historial', reporte: 'Reporte de turno', reuniones: 'Apuntes de reunión' };
+  const TITULOS = { areas: 'Inicio', evento: 'Nuevo evento', historial: 'Historial', reporte: 'Reporte de turno', reuniones: 'Apuntes de reunión', pendientes: 'Pendientes del turno anterior' };
   function mostrar(tab) {
     document.querySelectorAll('section').forEach((s) => s.classList.toggle('activa', s.id === 'v-' + tab));
     document.querySelectorAll('nav button').forEach((b) => b.classList.toggle('activo', b.dataset.tab === tab));
@@ -1188,6 +1229,7 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     if (tab === 'historial') renderHistorial();
     if (tab === 'reporte') renderReporte();
     if (tab === 'reuniones') renderReuniones();
+    if (tab === 'pendientes') renderPendientes();
     window.scrollTo(0, 0);
   }
   document.querySelectorAll('nav button').forEach((b) => b.addEventListener('click', () => mostrar(b.dataset.tab)));
@@ -1593,6 +1635,54 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     }
   });
   limpiarEditorReunion();
+
+
+  // ---------- Pendientes del turno anterior ----------
+  function renderPendientes() {
+    const cont = $('listaPendientes');
+    const total = pendientes.length;
+    const porEstado = { pendiente: 0, 'en curso': 0, listo: 0 };
+    pendientes.forEach(p => { if (porEstado[p.estado] !== undefined) porEstado[p.estado]++; });
+    $('pendientesContador').textContent = total + (total === 1 ? ' pendiente' : ' pendientes') + ' · ' + porEstado.pendiente + ' por iniciar · ' + porEstado['en curso'] + ' en curso · ' + porEstado.listo + ' listos';
+    if (!total) { cont.innerHTML = '<div class="vacio">Todavía no hay pendientes registrados. Agrega aquí los trabajos que recibe el turno.</div>'; return; }
+    const orden = { pendiente: 0, 'en curso': 1, listo: 2 };
+    const lista = [...pendientes].sort((a,b) => (orden[a.estado] ?? 0) - (orden[b.estado] ?? 0) || (b.creado || 0) - (a.creado || 0));
+    cont.innerHTML = lista.map(p => {
+      const estado = ['pendiente','en curso','listo'].includes(p.estado) ? p.estado : 'pendiente';
+      const etiqueta = estado === 'en curso' ? 'En curso' : estado === 'listo' ? 'Listo' : 'Pendiente';
+      return '<article class="pendiente-item" data-pendiente-id="' + esc(p.id) + '">' +
+        '<div class="pendiente-descripcion">' + esc(p.descripcion) + '</div>' +
+        (p.responsable ? '<div class="pendiente-meta">Responsable: ' + esc(p.responsable) + '</div>' : '') +
+        '<div class="pendiente-meta">Registrado: ' + new Date(p.creado || Date.now()).toLocaleString("es-CL",{dateStyle:"medium",timeStyle:"short"}) + '</div>' +
+        '<div class="pendiente-controles"><span class="estado-pendiente ' + (estado === 'en curso' ? 'en-curso' : estado === 'listo' ? 'listo' : '') + '">' + etiqueta + '</span>' +
+        '<select aria-label="Estado del pendiente" data-pendiente-estado><option value="pendiente"' + (estado === 'pendiente' ? ' selected' : '') + '>Pendiente</option><option value="en curso"' + (estado === 'en curso' ? ' selected' : '') + '>En curso</option><option value="listo"' + (estado === 'listo' ? ' selected' : '') + '>Listo</option></select>' +
+        '<button type="button" class="peligro" data-pendiente-eliminar>Eliminar</button></div></article>';
+    }).join('');
+  }
+  $('btnGuardarPendiente').addEventListener('click', () => {
+    const descripcion = $('pendienteTexto').value.trim();
+    const responsable = $('pendienteResponsable').value.trim();
+    const msg = $('pendienteMsg');
+    if (!descripcion) { msg.className = 'msg error'; msg.textContent = 'Escribe la descripción del pendiente.'; $('pendienteTexto').focus(); return; }
+    pendientes.push({ id: uid(), descripcion, responsable, estado: 'pendiente', creado: Date.now(), actualizado: Date.now() });
+    guardar(); renderPendientes();
+    $('pendienteTexto').value = ''; $('pendienteResponsable').value = '';
+    msg.className = 'msg ok'; msg.textContent = '✓ Pendiente agregado y guardado.';
+  });
+  $('listaPendientes').addEventListener('change', e => {
+    const select = e.target.closest('select[data-pendiente-estado]'); if (!select) return;
+    const item = select.closest('[data-pendiente-id]');
+    const p = pendientes.find(x => x.id === item.dataset.pendienteId); if (!p) return;
+    p.estado = ['pendiente','en curso','listo'].includes(select.value) ? select.value : 'pendiente';
+    p.actualizado = Date.now(); guardar(); renderPendientes();
+  });
+  $('listaPendientes').addEventListener('click', e => {
+    const b = e.target.closest('button[data-pendiente-eliminar]'); if (!b) return;
+    const item = b.closest('[data-pendiente-id]');
+    const p = pendientes.find(x => x.id === item.dataset.pendienteId); if (!p) return;
+    if (!confirm('¿Eliminar este pendiente?')) return;
+    pendientes = pendientes.filter(x => x.id !== p.id); guardar(); renderPendientes();
+  });
 
   // ---------- Reporte ----------
   let turno = L.turnoActual();
