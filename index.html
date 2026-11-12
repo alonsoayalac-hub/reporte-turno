@@ -1033,6 +1033,38 @@ nav{z-index:40}
   #cardAdminAreas .areas-logo{align-self:start;height:auto!important;margin-top:0!important}
 }
 </style>
+
+<style id="abb-import-ui">
+.abb-import-card{grid-column:1!important}
+.abb-import-intro{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,.72fr);gap:16px;align-items:end}
+.abb-import-intro p{margin:0;line-height:1.5}
+.abb-import-file{min-width:0}
+.abb-import-file input{width:100%;min-height:46px;padding:9px;border:1px dashed var(--borde);border-radius:12px;background:var(--bg);color:var(--txt);font:inherit;font-size:13px}
+.abb-import-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:14px 0}
+.abb-import-stat{min-width:0;padding:12px;border:1px solid var(--borde);border-radius:12px;background:var(--bg)}
+.abb-import-stat small{display:block;color:var(--muted);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.abb-import-stat strong{display:block;margin-top:5px;font-size:15px;overflow-wrap:anywhere}
+.abb-import-stat span{display:block;margin-top:4px;color:var(--muted);font-size:11px;line-height:1.4}
+.abb-variable-list{max-height:430px;overflow:auto;border-top:1px solid var(--borde)}
+.abb-variable-row{padding:12px 2px;border-bottom:1px solid var(--borde)}
+.abb-variable-name strong{display:block;font-size:13px;line-height:1.4}
+.abb-variable-name small{display:block;margin-top:3px;color:var(--muted);font-size:10px;overflow-wrap:anywhere}
+.abb-variable-values{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:9px}
+.abb-variable-values span{min-width:0;display:flex;flex-direction:column;gap:3px}
+.abb-variable-values small{font-size:10px;color:var(--muted)}
+.abb-variable-values b{font-size:12px;overflow-wrap:anywhere}
+.abb-variable-count{margin-top:6px;font-size:10px;color:var(--muted)}
+.abb-import-actions{display:flex;justify-content:flex-end;margin-top:12px}
+.abb-import-actions button{min-height:40px;font-size:12px}
+@media(max-width:700px){
+ .abb-import-intro{display:block}
+ .abb-import-file{margin-top:12px}
+ .abb-import-stats{grid-template-columns:1fr 1fr}
+ .abb-import-stat:first-child{grid-column:1/-1}
+ .abb-variable-values{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+</style>
+
 </head>
 <body class="auth-locked">
 <div id="authScreen" role="dialog" aria-modal="true" aria-labelledby="authTitle">
@@ -1131,6 +1163,29 @@ nav{z-index:40}
       <button id="turnoNoche" type="button">🌙 Turno Noche</button>
     </div>
     <div class="muted" id="rangoInfo" style="text-align:center;margin-bottom:10px"></div>
+    <div class="card abb-import-card">
+      <div class="abb-import-intro">
+        <div>
+          <h2>Datos de proceso ABB TIS</h2>
+          <p class="muted">Importa el archivo JSON exportado desde una copia de tu Excel ABB. Los datos se muestran localmente y no se sincronizan con Supabase.</p>
+        </div>
+        <div class="abb-import-file">
+          <label for="abbFile">Seleccionar archivo de exportación (.json)</label>
+          <input type="file" id="abbFile" accept=".json,application/json">
+        </div>
+      </div>
+      <div id="abbImportStatus" class="msg muted" role="status" aria-live="polite">No hay datos ABB importados. Primero actualiza TIS en Excel y luego selecciona el archivo exportado.</div>
+      <div id="abbImportSummary" hidden>
+        <div class="abb-import-stats">
+          <div class="abb-import-stat"><small>Turno importado</small><strong id="abbShiftLabel">—</strong><span id="abbRangeLabel">—</span></div>
+          <div class="abb-import-stat"><small>Registros</small><strong id="abbRecordsLabel">—</strong><span>Filas con marca de tiempo</span></div>
+          <div class="abb-import-stat"><small>Variables con datos</small><strong id="abbVariablesLabel">—</strong><span>Variables con al menos un valor</span></div>
+        </div>
+        <h2>Indicadores por variable</h2>
+        <div id="abbVariableList" class="abb-variable-list"></div>
+        <div class="abb-import-actions"><button type="button" class="sec" id="abbClearImport">Quitar datos importados</button></div>
+      </div>
+    </div>
     <div class="card"><div class="report-head"><img src="icon-192.png" alt=""><span><strong>Reporte de Turno</strong><small>Resumen listo para compartir</small></span></div><pre id="reporte"></pre></div>
     <div class="col">
       <button class="verde" id="btnWhatsApp">Enviar por WhatsApp</button>
@@ -1231,6 +1286,7 @@ nav{z-index:40}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="logica.js"></script>
+<script src="abb-import.js"></script>
 <script>
 (function () {
   'use strict';
@@ -2160,6 +2216,7 @@ nav{z-index:40}
   });
 
   // ---------- Inicio ----------
+  if (window.ABBImport) window.ABBImport.init();
   iniciarAutenticacion();
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
