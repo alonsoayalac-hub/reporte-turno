@@ -984,6 +984,10 @@ nav{z-index:40}
 .dashboard-reunion-texto p{margin:6px 0 0;color:var(--muted);font-size:11px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 @media(max-width:700px){.dashboard-reuniones-lista{grid-template-columns:1fr}.dashboard-reunion-item{padding:11px}}
 </style>
+<style id="dashboard-reunion-focus">
+.reunion-destacada{outline:2px solid var(--azul);outline-offset:2px}
+.dashboard-reunion-item:focus-visible{outline:2px solid var(--azul);outline-offset:2px}
+</style>
 </head>
 <body class="auth-locked">
 <div id="authScreen" role="dialog" aria-modal="true" aria-labelledby="authTitle">
@@ -1030,7 +1034,7 @@ nav{z-index:40}
     <div class="card dashboard-reuniones" id="dashboardReuniones"><div class="dashboard-reuniones-head"><div><h2>Últimas reuniones</h2><p>Acceso rápido a tus apuntes recientes</p></div><button type="button" class="mini sec" data-go="reuniones">Ver todas</button></div><div id="dashboardReunionesLista"><div class="muted">Cargando reuniones…</div></div></div>
     <div class="seccion-titulo" id="areasPlantaHeading"><h2>Áreas de la planta</h2></div>
     <div class="areas-logo" aria-hidden="true"><img src="icon-200.png" alt=""></div>
-    <div class="card">
+    <div class="card" id="cardAgregarArea">
       <h2>Agregar área</h2>
       <div class="fila">
         <input type="text" id="areaNueva" placeholder="Ej: CHANCADO" autocapitalize="characters" autocomplete="off">
@@ -1038,7 +1042,7 @@ nav{z-index:40}
       </div>
       <div id="areaMsg" class="msg error"></div>
     </div>
-    <div class="card">
+    <div class="card" id="cardAdminAreas">
       <h2>Administración de áreas</h2><div id="listaAreas"></div>
     </div>
   </section>
@@ -1826,6 +1830,26 @@ nav{z-index:40}
     $('reunionPalabras').textContent = palabras + (palabras === 1 ? ' palabra' : ' palabras');
     $('reunionCaracteres').textContent = t.length + ' caracteres';
   }
+  function renderDashboardReuniones() {
+    const cont = $('dashboardReunionesLista');
+    if (!cont) return;
+    const recientes = [...reuniones].sort((a,b) =>
+      (b.fecha || '').localeCompare(a.fecha || '') ||
+      (b.actualizado || b.creado || 0) - (a.actualizado || a.creado || 0)
+    ).slice(0,2);
+    if (!recientes.length) {
+      cont.innerHTML = '<div class="muted">Todavía no hay reuniones guardadas. Tus dos apuntes más recientes aparecerán aquí.</div>';
+      return;
+    }
+    cont.innerHTML = '<div class="dashboard-reuniones-lista">' + recientes.map(r => {
+      const resumen = (r.contenido || '').trim().replace(/\\s+/g, ' ');
+      return `<div class="dashboard-reunion-item" role="button" tabindex="0" data-dashboard-reunion="${esc(r.id)}" aria-label="Abrir reunión: ${esc(r.titulo)}">
+        <span class="dashboard-reunion-icon">📝</span>
+        <span class="dashboard-reunion-texto"><strong>${esc(r.titulo)}</strong><small>📅 ${esc(fechaLegible(r.fecha))}</small><p>${esc(resumen)}</p></span>
+        <span aria-hidden="true">›</span>
+      </div>`;
+    }).join('') + '</div>';
+  }
   function renderReuniones() {
     const q = $('buscarReunion').value.trim().toLocaleLowerCase('es');
     const lista = reuniones.filter(r => (r.titulo + ' ' + r.contenido).toLocaleLowerCase('es').includes(q))
@@ -1833,12 +1857,13 @@ nav{z-index:40}
     const cont = $('listaReuniones');
     if (!lista.length) {
       cont.innerHTML = '<div class="vacio">' + (q ? 'No hay reuniones que coincidan con la búsqueda.' : 'Todavía no hay apuntes guardados. Crea el primero usando el formulario.') + '</div>';
+      renderDashboardReuniones();
       return;
     }
     cont.innerHTML = lista.map(r => `
       <article class="reunion-item" data-id="${esc(r.id)}">
         <h3>${esc(r.titulo)}</h3>
-        <div class="reunion-meta"><span>📅 ${esc(fechaLegible(r.fecha))}</span><span>·</span><span>${(r.contenido || '').trim() ? (r.contenido.trim().split(/\s+/).length + ' palabras') : 'Sin contenido'}</span></div>
+        <div class="reunion-meta"><span>📅 ${esc(fechaLegible(r.fecha))}</span><span>·</span><span>${(r.contenido || '').trim() ? (r.contenido.trim().split(/\\s+/).length + ' palabras') : 'Sin contenido'}</span></div>
         <div class="reunion-contenido">${esc(r.contenido || '')}</div>
         <div class="acciones">
           <button class="mini" data-reunion-accion="editar">✏️ Editar</button>
@@ -1847,6 +1872,7 @@ nav{z-index:40}
           <button class="peligro" data-reunion-accion="eliminar">Eliminar</button>
         </div>
       </article>`).join('');
+    renderDashboardReuniones();
   }
   function cargarReunionEnEditor(id) {
     const r = reuniones.find(x => x.id === id);
@@ -1888,6 +1914,24 @@ nav{z-index:40}
     renderReuniones();
     limpiarEditorReunion();
     estado.className = 'msg ok'; estado.textContent = '✓ Apunte guardado correctamente.';
+  });
+  $('dashboardReunionesLista').addEventListener('click', (e) => {
+    const item = e.target.closest('[data-dashboard-reunion]');
+    if (!item) return;
+    const id = item.dataset.dashboardReunion;
+    mostrar('reuniones');
+    requestAnimationFrame(() => {
+      const destino = document.querySelector('.reunion-item[data-id="' + CSS.escape(id) + '"]');
+      if (destino) {
+        destino.scrollIntoView({behavior:'smooth', block:'center'});
+        destino.classList.add('reunion-destacada');
+      }
+    });
+  });
+  $('dashboardReunionesLista').addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const item = e.target.closest('[data-dashboard-reunion]');
+    if (item) { e.preventDefault(); item.click(); }
   });
   $('listaReuniones').addEventListener('click', async (e) => {
     const b = e.target.closest('button[data-reunion-accion]');
