@@ -988,6 +988,13 @@ nav{z-index:40}
 .reunion-destacada{outline:2px solid var(--azul);outline-offset:2px}
 .dashboard-reunion-item:focus-visible{outline:2px solid var(--azul);outline-offset:2px}
 </style>
+<style id="dashboard-grid-v22b">
+/* Reajuste de posición del panel de áreas tras añadir reuniones recientes */
+@media(min-width:901px){
+  #cardAgregarArea{grid-column:5/span 3!important;grid-row:6!important}
+  #cardAdminAreas{grid-column:8/span 5!important;grid-row:6!important}
+}
+</style>
 </head>
 <body class="auth-locked">
 <div id="authScreen" role="dialog" aria-modal="true" aria-labelledby="authTitle">
@@ -1921,7 +1928,7 @@ nav{z-index:40}
     const id = item.dataset.dashboardReunion;
     mostrar('reuniones');
     requestAnimationFrame(() => {
-      const destino = document.querySelector('.reunion-item[data-id="' + CSS.escape(id) + '"]');
+      const destino = [...document.querySelectorAll('.reunion-item')].find(el => el.dataset.id === id);
       if (destino) {
         destino.scrollIntoView({behavior:'smooth', block:'center'});
         destino.classList.add('reunion-destacada');
