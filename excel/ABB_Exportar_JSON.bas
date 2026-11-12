@@ -152,7 +152,7 @@ Public Sub ExportarDatosABB_JSON()
         FileFilter:="Archivo JSON (*.json), *.json", _
         Title:="Guardar exportación ABB TIS")
 
-    If VarType(ruta) = vbBoolean And ruta = False Then Exit Sub
+    If VarType(ruta) = vbBoolean Then Exit Sub
     If LCase$(Right$(CStr(ruta), 5)) <> ".json" Then ruta = CStr(ruta) & ".json"
 
     GuardarUTF8 CStr(ruta), json
