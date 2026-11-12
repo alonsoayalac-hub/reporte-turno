@@ -4,10 +4,12 @@ create table if not exists public.user_app_data (
   areas jsonb not null default '[]'::jsonb,
   eventos jsonb not null default '[]'::jsonb,
   reuniones jsonb not null default '[]'::jsonb,
+  pendientes jsonb not null default '[]'::jsonb,
   updated_at timestamptz not null default now(),
   constraint user_app_data_areas_array check (jsonb_typeof(areas) = 'array'),
   constraint user_app_data_eventos_array check (jsonb_typeof(eventos) = 'array'),
-  constraint user_app_data_reuniones_array check (jsonb_typeof(reuniones) = 'array')
+  constraint user_app_data_reuniones_array check (jsonb_typeof(reuniones) = 'array'),
+  constraint user_app_data_pendientes_array check (jsonb_typeof(pendientes) = 'array')
 );
 
 alter table public.user_app_data enable row level security;
@@ -67,3 +69,9 @@ create policy "Users can delete own app backups"
 
 grant select, insert, delete on public.user_app_backups to authenticated;
 grant usage, select on sequence public.user_app_backups_id_seq to authenticated;
+
+
+-- Actualización para instalaciones existentes.
+alter table public.user_app_data add column if not exists pendientes jsonb not null default '[]'::jsonb;
+alter table public.user_app_data drop constraint if exists user_app_data_pendientes_array;
+alter table public.user_app_data add constraint user_app_data_pendientes_array check (jsonb_typeof(pendientes) = 'array');
