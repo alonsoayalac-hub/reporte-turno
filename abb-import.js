@@ -176,7 +176,7 @@
         throw new Error('Selecciona un archivo JSON exportado desde Excel ABB.');
       }
       if (file.size > 15 * 1024 * 1024) throw new Error('El archivo supera el límite de 15 MB.');
-      const fileText = (await file.text()).replace(/^\\uFEFF/, '');
+      const fileText = (await file.text()).replace(/^\uFEFF/, '');
       const raw = JSON.parse(fileText);
       current = normalize(raw);
       render(current);
