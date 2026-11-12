@@ -1068,13 +1068,13 @@ nav{z-index:40}
     </div>
     <div class="seccion-titulo"><h2>Accesos rápidos</h2></div>
     <div class="accesos">
-      <button class="acceso" type="button" data-go="evento"><span class="acceso-icon">✍️</span><span><b>Registrar evento</b><small>Agregar una novedad</small></span></button>
-      <button class="acceso" type="button" data-go="historial"><span class="acceso-icon">📋</span><span><b>Ver historial</b><small>Consultar registros</small></span></button>
-      <button class="acceso" type="button" data-go="reporte"><span class="acceso-icon">📄</span><span><b>Generar reporte</b><small>Compartir el turno</small></span></button>
-      <button class="acceso" type="button" data-go="areas-admin"><span class="acceso-icon">⚙️</span><span><b>Configurar áreas</b><small>Administrar la planta</small></span></button>
-      <button class="acceso" type="button" data-go="pendientes"><span class="acceso-icon">📌</span><span><b>Pendientes del turno</b><small>Seguimiento de tareas anteriores</small></span></button>
-      <button class="acceso" type="button" id="btnAbrirRespaldos"><span class="acceso-icon">🛟</span><span><b>Respaldos</b><small>Recuperar o descargar información</small></span></button>
-      <button class="acceso acceso-apuntes" type="button" data-go="reuniones"><span class="acceso-icon">📝</span><span><b>Apuntes de reunión</b><small>Guardar acuerdos, temas y compromisos</small></span><span class="acceso-flecha">→</span></button>
+      <button class="acceso" type="button" data-go="evento"><span class="acceso-icon" data-lucide="pen-line"></span><span><b>Registrar evento</b><small>Agregar una novedad</small></span></button>
+      <button class="acceso" type="button" data-go="historial"><span class="acceso-icon" data-lucide="clipboard-list"></span><span><b>Ver historial</b><small>Consultar registros</small></span></button>
+      <button class="acceso" type="button" data-go="reporte"><span class="acceso-icon" data-lucide="file-text"></span><span><b>Generar reporte</b><small>Compartir el turno</small></span></button>
+      <button class="acceso" type="button" data-go="areas-admin"><span class="acceso-icon" data-lucide="settings"></span><span><b>Configurar áreas</b><small>Administrar la planta</small></span></button>
+      <button class="acceso" type="button" data-go="pendientes"><span class="acceso-icon" data-lucide="clipboard-check"></span><span><b>Pendientes del turno</b><small>Seguimiento de tareas anteriores</small></span></button>
+      <button class="acceso" type="button" id="btnAbrirRespaldos"><span class="acceso-icon" data-lucide="cloud-upload"></span><span><b>Respaldos</b><small>Recuperar o descargar información</small></span></button>
+      <button class="acceso acceso-apuntes" type="button" data-go="reuniones"><span class="acceso-icon" data-lucide="notebook-pen"></span><span><b>Apuntes de reunión</b><small>Guardar acuerdos, temas y compromisos</small></span><span class="acceso-flecha">→</span></button>
     </div>
     <div class="card dashboard-reuniones" id="dashboardReuniones"><div class="dashboard-reuniones-head"><div><h2>Últimas reuniones</h2><p>Acceso rápido a tus apuntes recientes</p></div><button type="button" class="mini sec" data-go="reuniones">Ver todas</button></div><div id="dashboardReunionesLista"><div class="muted">Cargando reuniones…</div></div></div>
     <div class="seccion-titulo" id="areasPlantaHeading"><h2>Áreas de la planta</h2></div>
@@ -1106,7 +1106,7 @@ nav{z-index:40}
       <label for="texto" style="margin-top:16px">2. Describe qué ocurrió</label>
       <textarea id="texto" placeholder="Ej: Chancado, corte de correa 211-BT1, se está gestionando cambio"></textarea>
       <div class="fila" style="margin-top:10px">
-        <button id="mic" class="sec" type="button">🎤 Dictar por voz</button>
+        <button id="mic" class="sec" type="button"><svg data-lucide="mic" aria-hidden="true"></svg><span>Dictar por voz</span></button>
         <button id="btnLimpiar" class="mini" type="button">Borrar texto</button>
       </div>
       <div id="vozMsg" class="msg muted"></div>
@@ -1189,12 +1189,12 @@ nav{z-index:40}
 </main>
 
 <nav>
-  <button data-tab="areas" class="activo"><span>⌂</span>Inicio</button>
-  <button data-tab="evento"><span>✏️</span>Evento</button>
-  <button data-tab="historial"><span>📋</span>Historial</button>
-  <button data-tab="reporte"><span>📄</span>Reporte</button>
-  <button data-tab="reuniones"><span>📝</span>Apuntes</button>
-  <button data-tab="pendientes"><span>📌</span>Pendientes</button>
+  <button data-tab="areas" class="activo"><span data-lucide="house"></span>Inicio</button>
+  <button data-tab="evento"><span data-lucide="pen-line"></span>Evento</button>
+  <button data-tab="historial"><span data-lucide="clipboard-list"></span>Historial</button>
+  <button data-tab="reporte"><span data-lucide="file-text"></span>Reporte</button>
+  <button data-tab="reuniones"><span data-lucide="notebook-pen"></span>Apuntes</button>
+  <button data-tab="pendientes"><span data-lucide="clipboard-check"></span>Pendientes</button>
 </nav>
 
 
@@ -1237,6 +1237,32 @@ nav{z-index:40}
   const L = window.Logica;
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // Iconografía SVG basada en Lucide: consistente, nítida y sin dependencias externas.
+  const LUCIDE = {
+    "pen-line": '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/>',
+    "clipboard-list": '<rect x="8" y="3" width="12" height="18" rx="2"/><path d="M16 3.5V2h-4v1.5"/><path d="M12 11h4M12 15h4M10 11h.01M10 15h.01"/>',
+    "file-text": '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h8"/>',
+    "settings": '<path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a8 8 0 0 1-1.8 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.8-1l-1.7.7-1.4-2.4 1.4-1.1a7 7 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a8 8 0 0 1 1.8-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.8 1l1.7-.7 1.4 2.4-1.4 1.1a7 7 0 0 1 0 2Z"/>',
+    "clipboard-check": '<rect x="8" y="3" width="12" height="18" rx="2"/><path d="M16 3.5V2h-4v1.5M10 13l2 2 4-4"/>',
+    "cloud-upload": '<path d="M20 16.2A4.5 4.5 0 0 0 18 7.5h-1.2A6 6 0 1 0 5 16"/><path d="M12 12v9m-4-5 4-4 4 4"/>',
+    "notebook-pen": '<path d="M12 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8"/><path d="M8 6h4M8 10h4M8 14h2"/><path d="m16 18 4-4 2 2-4 4-3 1Z"/>',
+    "house": '<path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9M9 20v-6h6v6"/>',
+    "calendar-days": '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18M8 15h.01M12 15h.01M16 15h.01M8 18h.01M12 18h.01"/>',
+    "pencil": '<path d="m16 4 4 4M4 20l4-.8L19 8a2.1 2.1 0 0 0-3-3L5 16Z"/>',
+    "copy": '<rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',
+    "mic": '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8"/>'
+  };
+  function svgIcon(name, size = 20) {
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + (LUCIDE[name] || '') + '</svg>';
+  }
+  function aplicarIconos() {
+    document.querySelectorAll('[data-lucide]').forEach(el => {
+      const name = el.dataset.lucide;
+      el.innerHTML = svgIcon(name, el.closest('nav') ? 21 : 20);
+    });
+  }
+
+  aplicarIconos();
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
   // ---------- Datos privados sincronizados con Supabase ----------
@@ -1687,7 +1713,7 @@ nav{z-index:40}
   function actualizarEstadoVoz() {
     grabando = false;
     $('mic').classList.remove('grabando');
-    $('mic').textContent = '🎤 Dictar por voz';
+    $('mic').innerHTML = svgIcon('mic',18) + '<span>Dictar por voz</span>';
   }
 
   function detenerVoz() {
@@ -1713,7 +1739,7 @@ nav{z-index:40}
       if (rec !== sesion) return;
       grabando = true;
       $('mic').classList.add('grabando');
-      $('mic').textContent = '⏹ Detener dictado';
+      $('mic').innerHTML = '<span aria-hidden="true">■</span><span>Detener dictado</span>';
       $('vozMsg').textContent = 'Escuchando… habla ahora. Pulsa detener cuando termines.';
     };
 
@@ -1894,8 +1920,8 @@ nav{z-index:40}
     cont.innerHTML = '<div class="dashboard-reuniones-lista">' + recientes.map(r => {
       const resumen = (r.contenido || '').trim().replace(/\\s+/g, ' ');
       return `<div class="dashboard-reunion-item" role="button" tabindex="0" data-dashboard-reunion="${esc(r.id)}" aria-label="Abrir reunión: ${esc(r.titulo)}">
-        <span class="dashboard-reunion-icon">📝</span>
-        <span class="dashboard-reunion-texto"><strong>${esc(r.titulo)}</strong><small>📅 ${esc(fechaLegible(r.fecha))}</small><p>${esc(resumen)}</p></span>
+        <span class="dashboard-reunion-icon">${svgIcon("notebook-pen",18)}</span>
+        <span class="dashboard-reunion-texto"><strong>${esc(r.titulo)}</strong><small>${svgIcon("calendar-days",13)} ${esc(fechaLegible(r.fecha))}</small><p>${esc(resumen)}</p></span>
         <span aria-hidden="true">›</span>
       </div>`;
     }).join('') + '</div>';
@@ -1913,11 +1939,11 @@ nav{z-index:40}
     cont.innerHTML = lista.map(r => `
       <article class="reunion-item" data-id="${esc(r.id)}">
         <h3>${esc(r.titulo)}</h3>
-        <div class="reunion-meta"><span>📅 ${esc(fechaLegible(r.fecha))}</span><span>·</span><span>${(r.contenido || '').trim() ? (r.contenido.trim().split(/\\s+/).length + ' palabras') : 'Sin contenido'}</span></div>
+        <div class="reunion-meta"><span>${svgIcon("calendar-days",13)} ${esc(fechaLegible(r.fecha))}</span><span>·</span><span>${(r.contenido || '').trim() ? (r.contenido.trim().split(/\\s+/).length + ' palabras') : 'Sin contenido'}</span></div>
         <div class="reunion-contenido">${esc(r.contenido || '')}</div>
         <div class="acciones">
-          <button class="mini" data-reunion-accion="editar">✏️ Editar</button>
-          <button class="mini" data-reunion-accion="copiar">📋 Copiar</button>
+          <button class="mini" data-reunion-accion="editar">${svgIcon("pencil",15)} Editar</button>
+          <button class="mini" data-reunion-accion="copiar">${svgIcon("copy",15)} Copiar</button>
           <button class="mini" data-reunion-accion="txt">⬇️ Descargar</button>
           <button class="peligro" data-reunion-accion="eliminar">Eliminar</button>
         </div>
@@ -2140,5 +2166,18 @@ nav{z-index:40}
   }
 })();
 </script>
+
+<style id="lucide-iconografia-v26">
+  .acceso-icon svg{width:22px;height:22px;display:block;stroke-width:1.8}
+  #v-areas .acceso-apuntes .acceso-icon svg{width:25px;height:25px}
+  nav button span[data-lucide]{display:flex;align-items:center;justify-content:center;height:25px;margin:0 auto 2px}
+  nav button span[data-lucide] svg{width:21px;height:21px;stroke-width:1.9}
+  .dashboard-reunion-icon svg{width:19px;height:19px;display:block}
+  .dashboard-reunion-texto small svg,.reunion-meta svg{display:inline-block;vertical-align:-2px;margin-right:3px}
+  .reunion-item .acciones button svg{display:inline-block;vertical-align:-3px;margin-right:3px}
+  #mic{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+  #mic svg{width:18px;height:18px;flex:none}
+  .acceso-icon{color:var(--pri)}
+</style>
 </body>
 </html>
