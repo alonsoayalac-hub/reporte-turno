@@ -27,6 +27,9 @@
     if (!raw.shift || !Array.isArray(raw.variables) || !Array.isArray(raw.records)) {
       throw new Error('Faltan los datos del turno, las variables o los registros.');
     }
+    if (!['dia', 'noche'].includes(raw.shift.type)) {
+      throw new Error('El tipo de turno debe ser dia o noche.');
+    }
     if (raw.variables.length < 1 || raw.variables.length > 200) {
       throw new Error('La cantidad de variables debe estar entre 1 y 200.');
     }
@@ -142,7 +145,8 @@
 
     const shiftName = data.shift.type === 'noche' ? 'Noche' : 'Día';
     $('abbShiftLabel').textContent = (data.shift.date || 'Fecha no indicada') + ' · Turno ' + shiftName;
-    $('abbRangeLabel').textContent = formatDate(data.shift.start) + ' → ' + formatDate(data.shift.end);
+    $('abbRangeLabel').textContent = 'Consulta: ' + formatDate(data.shift.start) + ' → ' + formatDate(data.shift.end);
+    $('abbCoverageLabel').textContent = 'Datos: ' + formatDate(data.records[0].timestamp) + ' → ' + formatDate(data.records[data.records.length - 1].timestamp);
     $('abbRecordsLabel').textContent = data.records.length.toLocaleString('es-CL');
     $('abbVariablesLabel').textContent = data.nonEmptyVariables + ' / ' + data.variables.length;
 
@@ -172,7 +176,8 @@
         throw new Error('Selecciona un archivo JSON exportado desde Excel ABB.');
       }
       if (file.size > 15 * 1024 * 1024) throw new Error('El archivo supera el límite de 15 MB.');
-      const raw = JSON.parse(await file.text());
+      const fileText = (await file.text()).replace(/^\\uFEFF/, '');
+      const raw = JSON.parse(fileText);
       current = normalize(raw);
       render(current);
     } catch (error) {
