@@ -1112,7 +1112,7 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const esIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const instalada = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
-  let rec = null, grabando = false, baseTexto = '';
+  let rec = null, grabando = false, baseTexto = '', resultadoAplicado = false;
 
   if (!SR || (esIOS && instalada)) {
     $('mic').hidden = true;
@@ -1123,35 +1123,92 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     $('vozMsg').textContent = 'También puedes dictar con el micrófono del teclado del iPhone.';
   }
 
-  function detenerVoz() { try { rec && rec.stop(); } catch (e) {} }
+  function actualizarEstadoVoz() {
+    grabando = false;
+    $('mic').classList.remove('grabando');
+    $('mic').textContent = '🎤 Dictar por voz';
+  }
+
+  function detenerVoz() {
+    try { if (rec && grabando) rec.stop(); } catch (e) {}
+  }
+
   function iniciarVoz() {
+    if (grabando) return;
     $('vozMsg').className = 'msg muted';
-    rec = new SR();
-    rec.lang = 'es-CL';
-    rec.continuous = true;
-    rec.interimResults = true;
+    resultadoAplicado = false;
     baseTexto = $('texto').value.trim();
-    rec.onstart = () => { grabando = true; $('mic').classList.add('grabando'); $('mic').textContent = '⏹ Detener grabación'; $('vozMsg').textContent = 'Escuchando… habla ahora.'; };
-    rec.onresult = (ev) => {
-      let t = '';
-      for (let i = 0; i < ev.results.length; i++) t += ev.results[i][0].transcript;
-      $('texto').value = (baseTexto ? baseTexto + ' ' : '') + t.trim();
-      renderPrevia();
+
+    const sesion = new SR();
+    rec = sesion;
+    // Una frase por pulsación: evita que los motores móviles reenvíen segmentos
+    // anteriores durante sesiones continuas.
+    sesion.lang = 'es-CL';
+    sesion.continuous = false;
+    sesion.interimResults = false;
+    sesion.maxAlternatives = 1;
+
+    sesion.onstart = () => {
+      if (rec !== sesion) return;
+      grabando = true;
+      $('mic').classList.add('grabando');
+      $('mic').textContent = '⏹ Detener dictado';
+      $('vozMsg').textContent = 'Escuchando… habla ahora. Pulsa detener cuando termines.';
     };
-    rec.onerror = (ev) => {
+
+    sesion.onresult = (ev) => {
+      if (rec !== sesion || resultadoAplicado) return;
+      let transcripcion = '';
+      // Solo aceptar resultados definitivos. Los resultados parciales del navegador
+      // no se escriben en el campo, evitando que se acumulen o repitan.
+      for (let i = 0; i < ev.results.length; i++) {
+        if (ev.results[i].isFinal) {
+          transcripcion = (ev.results[i][0].transcript || '').trim();
+          if (transcripcion) break;
+        }
+      }
+      if (!transcripcion) return;
+
+      resultadoAplicado = true;
+      $('texto').value = (baseTexto ? baseTexto + ' ' : '') + transcripcion;
+      renderPrevia();
+      $('vozMsg').className = 'msg ok';
+      $('vozMsg').textContent = '✓ Dictado agregado. Puedes volver a pulsar para añadir otra frase.';
+      try { sesion.stop(); } catch (e) {}
+    };
+
+    sesion.onerror = (ev) => {
+      if (rec !== sesion) return;
       const m = {
         'not-allowed': 'Permite el uso del micrófono para este sitio en los ajustes del navegador.',
         'service-not-allowed': 'El dictado no está permitido en este navegador. Usa el micrófono del teclado.',
         'no-speech': 'No se escuchó nada. Intenta de nuevo.',
         'audio-capture': 'No se encontró un micrófono.',
         'network': 'El dictado necesita conexión a internet.',
+        'aborted': 'Dictado cancelado.',
       };
-      $('vozMsg').className = 'msg error';
+      $('vozMsg').className = 'msg ' + (ev.error === 'aborted' ? 'muted' : 'error');
       $('vozMsg').textContent = m[ev.error] || 'El dictado se detuvo: ' + ev.error;
     };
-    rec.onend = () => { grabando = false; $('mic').classList.remove('grabando'); $('mic').textContent = '🎤 Dictar por voz'; if ($('vozMsg').className.indexOf('error') < 0) $('vozMsg').textContent = ''; };
-    try { rec.start(); } catch (e) { $('vozMsg').className = 'msg error'; $('vozMsg').textContent = 'No se pudo iniciar el dictado.'; }
+
+    sesion.onend = () => {
+      if (rec !== sesion) return;
+      actualizarEstadoVoz();
+      if (!resultadoAplicado && $('vozMsg').className.indexOf('error') < 0 &&
+          $('vozMsg').textContent.indexOf('cancelado') < 0) {
+        $('vozMsg').textContent = 'No se recibió una frase completa. Intenta dictar nuevamente.';
+      }
+    };
+
+    try {
+      sesion.start();
+    } catch (e) {
+      actualizarEstadoVoz();
+      $('vozMsg').className = 'msg error';
+      $('vozMsg').textContent = 'No se pudo iniciar el dictado. Intenta nuevamente.';
+    }
   }
+
   $('mic').addEventListener('click', () => { grabando ? detenerVoz() : iniciarVoz(); });
 
   // ---------- Historial ----------
