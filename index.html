@@ -702,6 +702,20 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
 @media(min-width:760px){nav{grid-template-columns:repeat(6,1fr)}}
 </style>
 
+
+<style>
+/* Selección rápida de responsable y estado */
+.pendiente-responsables{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:7px}
+.responsable-btn,.pendiente-estado-btn{border:1px solid var(--borde);background:var(--bg);color:var(--txt);border-radius:10px;padding:10px 6px;min-height:44px;font-size:12px;font-weight:750;cursor:pointer}
+.responsable-btn.seleccionado{border:2px solid var(--pri);background:color-mix(in srgb,var(--pri) 13%,var(--card));color:var(--pri)}
+.pendiente-estado-botones{display:flex;gap:6px;flex:1;flex-wrap:wrap}
+.pendiente-estado-btn{flex:1;min-width:86px;padding:8px 7px;min-height:39px;font-size:11px}
+.pendiente-estado-btn.activo-pendiente{border:2px solid var(--aviso);background:color-mix(in srgb,var(--aviso) 13%,var(--card));color:var(--aviso)}
+.pendiente-estado-btn.activo-curso{border:2px solid var(--pri);background:color-mix(in srgb,var(--pri) 13%,var(--card));color:var(--pri)}
+.pendiente-estado-btn.activo-listo{border:2px solid var(--verde);background:color-mix(in srgb,var(--verde) 13%,var(--card));color:var(--verde)}
+@media(max-width:420px){.pendiente-responsables{gap:5px}.responsable-btn{font-size:11px;padding:8px 3px}.pendiente-estado-botones{flex-basis:100%}}
+</style>
+
 </head>
 <body class="auth-locked">
 <div id="authScreen" role="dialog" aria-modal="true" aria-labelledby="authTitle">
@@ -809,8 +823,12 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
       <h2>Registrar pendiente</h2>
       <label for="pendienteTexto">Descripción del pendiente</label>
       <textarea id="pendienteTexto" maxlength="600" placeholder="Describe el trabajo que quedó pendiente del turno anterior..." style="min-height:110px"></textarea>
-      <label for="pendienteResponsable" style="margin-top:12px">Responsable (opcional)</label>
-      <input type="text" id="pendienteResponsable" maxlength="100" placeholder="Nombre del responsable o área">
+      <label style="margin-top:12px;display:block">Responsable</label>
+      <div class="pendiente-responsables" id="seleccionResponsable" role="group" aria-label="Seleccionar responsable">
+        <button type="button" class="responsable-btn" data-responsable="electrico">⚡ Eléctrico</button>
+        <button type="button" class="responsable-btn" data-responsable="mecanico">🔧 Mecánico</button>
+        <button type="button" class="responsable-btn" data-responsable="produccion">🏭 Producción</button>
+      </div>
       <button id="btnGuardarPendiente" class="verde" style="width:100%;margin-top:14px">＋ Agregar pendiente</button>
       <div id="pendienteMsg" class="msg" aria-live="polite"></div>
       <p class="muted">Los pendientes se guardan en tu cuenta y se sincronizan entre tus dispositivos.</p>
@@ -1639,6 +1657,19 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
 
 
   // ---------- Pendientes del turno anterior ----------
+  let responsablePendienteSeleccionado = '';
+  const RESPONSABLES_PENDIENTE = { electrico: 'Eléctrico', mecanico: 'Mecánico', produccion: 'Producción' };
+  function renderSeleccionResponsable() {
+    document.querySelectorAll('#seleccionResponsable [data-responsable]').forEach(b => {
+      const activo = b.dataset.responsable === responsablePendienteSeleccionado;
+      b.classList.toggle('seleccionado', activo); b.setAttribute('aria-pressed', String(activo));
+    });
+  }
+  $('seleccionResponsable').addEventListener('click', e => {
+    const b = e.target.closest('button[data-responsable]'); if (!b) return;
+    responsablePendienteSeleccionado = b.dataset.responsable;
+    renderSeleccionResponsable();
+  });
   function renderPendientes() {
     const cont = $('listaPendientes');
     const total = pendientes.length;
@@ -1650,39 +1681,41 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     const lista = [...pendientes].sort((a,b) => (orden[a.estado] ?? 0) - (orden[b.estado] ?? 0) || (b.creado || 0) - (a.creado || 0));
     cont.innerHTML = lista.map(p => {
       const estado = ['pendiente','en curso','listo'].includes(p.estado) ? p.estado : 'pendiente';
-      const etiqueta = estado === 'en curso' ? 'En curso' : estado === 'listo' ? 'Listo' : 'Pendiente';
+      const responsable = RESPONSABLES_PENDIENTE[p.responsable] || p.responsable || 'Sin asignar';
+      const estadoBoton = (valor, texto, clase) => '<button type="button" class="pendiente-estado-btn ' + (estado === valor ? clase : '') + '" data-pendiente-estado="' + valor + '" aria-pressed="' + (estado === valor) + '">' + texto + '</button>';
       return '<article class="pendiente-item" data-pendiente-id="' + esc(p.id) + '">' +
         '<div class="pendiente-descripcion">' + esc(p.descripcion) + '</div>' +
-        (p.responsable ? '<div class="pendiente-meta">Responsable: ' + esc(p.responsable) + '</div>' : '') +
+        '<div class="pendiente-meta">Responsable: ' + esc(responsable) + '</div>' +
         '<div class="pendiente-meta">Registrado: ' + new Date(p.creado || Date.now()).toLocaleString("es-CL",{dateStyle:"medium",timeStyle:"short"}) + '</div>' +
-        '<div class="pendiente-controles"><span class="estado-pendiente ' + (estado === 'en curso' ? 'en-curso' : estado === 'listo' ? 'listo' : '') + '">' + etiqueta + '</span>' +
-        '<select aria-label="Estado del pendiente" data-pendiente-estado><option value="pendiente"' + (estado === 'pendiente' ? ' selected' : '') + '>Pendiente</option><option value="en curso"' + (estado === 'en curso' ? ' selected' : '') + '>En curso</option><option value="listo"' + (estado === 'listo' ? ' selected' : '') + '>Listo</option></select>' +
-        '<button type="button" class="peligro" data-pendiente-eliminar>Eliminar</button></div></article>';
+        '<div class="pendiente-controles"><div class="pendiente-estado-botones">' +
+        estadoBoton('pendiente','Pendiente','activo-pendiente') + estadoBoton('en curso','En curso','activo-curso') + estadoBoton('listo','Listo','activo-listo') +
+        '</div><button type="button" class="peligro" data-pendiente-eliminar>Eliminar</button></div></article>';
     }).join('');
   }
   $('btnGuardarPendiente').addEventListener('click', () => {
     const descripcion = $('pendienteTexto').value.trim();
-    const responsable = $('pendienteResponsable').value.trim();
     const msg = $('pendienteMsg');
     if (!descripcion) { msg.className = 'msg error'; msg.textContent = 'Escribe la descripción del pendiente.'; $('pendienteTexto').focus(); return; }
-    pendientes.push({ id: uid(), descripcion, responsable, estado: 'pendiente', creado: Date.now(), actualizado: Date.now() });
-    guardar(); renderPendientes();
-    $('pendienteTexto').value = ''; $('pendienteResponsable').value = '';
+    if (!responsablePendienteSeleccionado) { msg.className = 'msg error'; msg.textContent = 'Selecciona un responsable: Eléctrico, Mecánico o Producción.'; return; }
+    pendientes.push({ id: uid(), descripcion, responsable: responsablePendienteSeleccionado, estado: 'pendiente', creado: Date.now(), actualizado: Date.now() });
+    guardar(); renderPendientes(); renderReporte();
+    $('pendienteTexto').value = ''; responsablePendienteSeleccionado = ''; renderSeleccionResponsable();
     msg.className = 'msg ok'; msg.textContent = '✓ Pendiente agregado y guardado.';
   });
-  $('listaPendientes').addEventListener('change', e => {
-    const select = e.target.closest('select[data-pendiente-estado]'); if (!select) return;
-    const item = select.closest('[data-pendiente-id]');
-    const p = pendientes.find(x => x.id === item.dataset.pendienteId); if (!p) return;
-    p.estado = ['pendiente','en curso','listo'].includes(select.value) ? select.value : 'pendiente';
-    p.actualizado = Date.now(); guardar(); renderPendientes();
-  });
   $('listaPendientes').addEventListener('click', e => {
+    const estadoBtn = e.target.closest('button[data-pendiente-estado]');
+    if (estadoBtn) {
+      const item = estadoBtn.closest('[data-pendiente-id]');
+      const p = pendientes.find(x => x.id === item.dataset.pendienteId); if (!p) return;
+      const nuevoEstado = estadoBtn.dataset.pendienteEstado;
+      if (!['pendiente','en curso','listo'].includes(nuevoEstado) || p.estado === nuevoEstado) return;
+      p.estado = nuevoEstado; p.actualizado = Date.now(); guardar(); renderPendientes(); renderReporte(); return;
+    }
     const b = e.target.closest('button[data-pendiente-eliminar]'); if (!b) return;
     const item = b.closest('[data-pendiente-id]');
     const p = pendientes.find(x => x.id === item.dataset.pendienteId); if (!p) return;
     if (!confirm('¿Eliminar este pendiente?')) return;
-    pendientes = pendientes.filter(x => x.id !== p.id); guardar(); renderPendientes();
+    pendientes = pendientes.filter(x => x.id !== p.id); guardar(); renderPendientes(); renderReporte();
   });
 
   // ---------- Reporte ----------
@@ -1692,6 +1725,12 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     $('turnoDia').classList.toggle('activo', turno === 'dia');
     $('turnoNoche').classList.toggle('activo', turno === 'noche');
     ultimo = L.generarReporte(turno, eventos, areas);
+    const pendientesReporte = pendientes.length ? '\n\nPENDIENTES DEL TURNO ANTERIOR\n' + pendientes.map(p => {
+      const estado = p.estado === 'en curso' ? 'EN CURSO' : p.estado === 'listo' ? 'LISTO' : 'PENDIENTE';
+      const responsable = RESPONSABLES_PENDIENTE[p.responsable] || p.responsable || 'Sin asignar';
+      return '• [' + estado + '] ' + p.descripcion + ' | Responsable: ' + responsable;
+    }).join('\n') : '';
+    ultimo.texto += pendientesReporte;
     const r = ultimo.rango;
     $('rangoInfo').textContent = `${L.nombreDia(r.inicio)} ${L.fFecha(r.inicio)} ${L.fHora(r.inicio)} → ${L.fHora(r.fin)} · ${ultimo.total} evento(s)`;
     $('reporte').textContent = ultimo.texto;
