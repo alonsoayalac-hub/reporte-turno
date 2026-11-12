@@ -1082,6 +1082,8 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     document.body.classList.remove('auth-locked');
     try {
       await cargarDatosNube(session.user);
+      // Al entrar, asegura que exista al menos una copia reciente aunque todavía no se edite nada.
+      await asegurarRespaldoAutomatico();
       intervaloSync = setInterval(sincronizarDesdeNube, 15000);
     } catch (error) {
       console.error(error);
