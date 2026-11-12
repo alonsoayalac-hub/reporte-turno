@@ -1147,6 +1147,7 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     areas = Array.isArray(data.areas) ? data.areas : [];
     eventos = Array.isArray(data.eventos) ? data.eventos : [];
     reuniones = Array.isArray(data.reuniones) ? data.reuniones : [];
+    pendientes = Array.isArray(data.pendientes) ? data.pendientes : [];
     ultimaActualizacionNube = fechaNube;
     cargandoDatos = false;
     renderAreas(); renderSelectorAreas(); renderPrevia(); renderHistorial(); renderReuniones(); renderPendientes(); renderReporte();
@@ -1160,7 +1161,7 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
     guardadoPendiente = null;
     if (intervaloSync) clearInterval(intervaloSync);
     intervaloSync = null; usuarioActual = null;
-    areas = []; eventos = []; reuniones = [];
+    areas = []; eventos = []; reuniones = []; pendientes = [];
     $('accountBar').hidden = true;
     document.body.classList.add('auth-locked');
     $('authPassword').value = '';
