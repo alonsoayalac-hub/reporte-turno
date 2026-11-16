@@ -2115,6 +2115,7 @@ nav{z-index:40}
     responsablePendienteSeleccionado = b.dataset.responsable;
     renderSeleccionResponsable();
   });
+  let pendienteEnEdicionId = null;
   function renderPendientes() {
     const cont = $('listaPendientes');
     const total = pendientes.length;
@@ -2128,13 +2129,16 @@ nav{z-index:40}
       const estado = ['pendiente','en curso','listo'].includes(p.estado) ? p.estado : 'pendiente';
       const responsable = RESPONSABLES_PENDIENTE[p.responsable] || p.responsable || 'Sin asignar';
       const estadoBoton = (valor, texto, clase) => '<button type="button" class="pendiente-estado-btn ' + (estado === valor ? clase : '') + '" data-pendiente-estado="' + valor + '" aria-pressed="' + (estado === valor) + '">' + texto + '</button>';
+      const editando = pendienteEnEdicionId === p.id;
       return '<article class="pendiente-item" data-pendiente-id="' + esc(p.id) + '">' +
-        '<div class="pendiente-descripcion">' + esc(p.descripcion) + '</div>' +
+        (editando
+          ? '<div class="pendiente-edicion"><label for="editarPendienteTexto">Editar descripción y agregar información</label><textarea id="editarPendienteTexto" maxlength="2000">' + esc(p.descripcion) + '</textarea><div class="pendiente-edicion-ayuda">Conserva el texto existente y añade los nuevos antecedentes que se vayan recaudando.</div><div class="pendiente-controles"><button type="button" class="verde" data-pendiente-guardar-edicion>Guardar cambios</button><button type="button" class="sec" data-pendiente-cancelar-edicion>Cancelar</button></div></div>'
+          : '<div class="pendiente-descripcion">' + esc(p.descripcion) + '</div>') +
         '<div class="pendiente-meta">Responsable: ' + esc(responsable) + '</div>' +
-        '<div class="pendiente-meta">Registrado: ' + new Date(p.creado || Date.now()).toLocaleString("es-CL",{dateStyle:"medium",timeStyle:"short"}) + '</div>' +
+        '<div class="pendiente-meta">Registrado: ' + new Date(p.creado || Date.now()).toLocaleString("es-CL",{dateStyle:"medium",timeStyle:"short"}) + (p.actualizado && p.actualizado !== p.creado ? ' · Actualizado: ' + new Date(p.actualizado).toLocaleString("es-CL",{dateStyle:"medium",timeStyle:"short"}) : '') + '</div>' +
         '<div class="pendiente-controles"><div class="pendiente-estado-botones">' +
         estadoBoton('pendiente','Pendiente','activo-pendiente') + estadoBoton('en curso','En curso','activo-curso') + estadoBoton('listo','Listo','activo-listo') +
-        '</div><button type="button" class="peligro" data-pendiente-eliminar>Eliminar</button></div></article>';
+        '</div>' + (editando ? '' : '<button type="button" class="sec" data-pendiente-editar>Editar / agregar info.</button>') + '<button type="button" class="peligro" data-pendiente-eliminar>Eliminar</button></div></article>';
     }).join('');
   }
   $('btnGuardarPendiente').addEventListener('click', () => {
@@ -2148,19 +2152,38 @@ nav{z-index:40}
     msg.className = 'msg ok'; msg.textContent = '✓ Pendiente agregado y guardado.';
   });
   $('listaPendientes').addEventListener('click', e => {
+    const item = e.target.closest('[data-pendiente-id]');
+    const p = item && pendientes.find(x => x.id === item.dataset.pendienteId);
+    if (e.target.closest('button[data-pendiente-editar]')) {
+      if (!p) return;
+      pendienteEnEdicionId = p.id; renderPendientes();
+      const editor = $('editarPendienteTexto'); if (editor) { editor.focus(); editor.setSelectionRange(editor.value.length, editor.value.length); }
+      return;
+    }
+    if (e.target.closest('button[data-pendiente-cancelar-edicion]')) {
+      pendienteEnEdicionId = null; renderPendientes(); return;
+    }
+    if (e.target.closest('button[data-pendiente-guardar-edicion]')) {
+      if (!p) return;
+      const editor = item.querySelector('#editarPendienteTexto');
+      const descripcion = editor ? editor.value.trim() : '';
+      if (!descripcion) { alert('La descripción del pendiente no puede quedar vacía.'); if (editor) editor.focus(); return; }
+      p.descripcion = descripcion; p.actualizado = Date.now(); pendienteEnEdicionId = null;
+      guardar(); renderPendientes(); renderReporte(); return;
+    }
     const estadoBtn = e.target.closest('button[data-pendiente-estado]');
     if (estadoBtn) {
-      const item = estadoBtn.closest('[data-pendiente-id]');
-      const p = pendientes.find(x => x.id === item.dataset.pendienteId); if (!p) return;
+      if (!p) return;
       const nuevoEstado = estadoBtn.dataset.pendienteEstado;
       if (!['pendiente','en curso','listo'].includes(nuevoEstado) || p.estado === nuevoEstado) return;
       p.estado = nuevoEstado; p.actualizado = Date.now(); guardar(); renderPendientes(); renderReporte(); return;
     }
     const b = e.target.closest('button[data-pendiente-eliminar]'); if (!b) return;
-    const item = b.closest('[data-pendiente-id]');
-    const p = pendientes.find(x => x.id === item.dataset.pendienteId); if (!p) return;
+    if (!p) return;
     if (!confirm('¿Eliminar este pendiente?')) return;
-    pendientes = pendientes.filter(x => x.id !== p.id); guardar(); renderPendientes(); renderReporte();
+    pendientes = pendientes.filter(x => x.id !== p.id);
+    if (pendienteEnEdicionId === p.id) pendienteEnEdicionId = null;
+    guardar(); renderPendientes(); renderReporte();
   });
 
   // ---------- Reporte ----------
@@ -2251,6 +2274,14 @@ nav button span[data-lucide] svg{width:26px!important;height:26px!important;stro
   #v-areas .acceso-apuntes .acceso-icon svg{width:30px!important;height:30px!important}
   nav button span[data-lucide] svg{width:24px!important;height:24px!important}
 }
+</style>
+<style id="pendientes-edicion-v29">
+.pendiente-edicion{margin:0 0 12px}
+.pendiente-edicion label{display:block;font-size:12px;font-weight:750;margin-bottom:7px}
+.pendiente-edicion textarea{width:100%;min-height:130px;resize:vertical;line-height:1.5}
+.pendiente-edicion-ayuda{font-size:11px;color:var(--muted);line-height:1.4;margin-top:6px}
+.pendiente-edicion .pendiente-controles{margin-top:10px}
+@media(max-width:520px){.pendiente-edicion .pendiente-controles button{flex:1}}
 </style>
 </body>
 </html>
