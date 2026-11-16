@@ -2204,7 +2204,7 @@ nav{z-index:40}
       const estado = p.estado === 'en curso' ? 'EN CURSO' : p.estado === 'listo' ? 'LISTO' : 'PENDIENTE';
       const responsable = RESPONSABLES_PENDIENTE[p.responsable] || p.responsable || 'Sin asignar';
       const titulo = p.titulo || p.descripcion.slice(0,120);
-      return '• [' + estado + '] ' + titulo + (p.descripcion ? '\\n  Detalle: ' + p.descripcion : '') + ' | Responsable: ' + responsable;
+      return '• [' + estado + '] ' + titulo + (p.descripcion ? '\n  Detalle: ' + p.descripcion : '') + ' | Responsable: ' + responsable;
     }).join('\n') : '';
     ultimo.texto += pendientesReporte;
     const r = ultimo.rango;
