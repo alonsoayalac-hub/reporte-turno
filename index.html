@@ -1199,8 +1199,10 @@ nav{z-index:40}
   <section id="v-pendientes">
     <div class="card pendientes-editor">
       <h2>Registrar pendiente</h2>
-      <label for="pendienteTexto">Descripción del pendiente</label>
-      <textarea id="pendienteTexto" maxlength="600" placeholder="Describe el trabajo que quedó pendiente del turno anterior..." style="min-height:110px"></textarea>
+      <label for="pendienteTitulo">Título del pendiente</label>
+      <input type="text" id="pendienteTitulo" maxlength="120" placeholder="Ej: Revisar bomba de alimentación Molino 5">
+      <label for="pendienteTexto" style="margin-top:12px;display:block">Descripción y antecedentes</label>
+      <textarea id="pendienteTexto" maxlength="2000" placeholder="Describe el trabajo pendiente. Luego podrás editarlo para agregar nuevos antecedentes..." style="min-height:110px"></textarea>
       <label style="margin-top:12px;display:block">Responsable</label>
       <div class="pendiente-responsables" id="seleccionResponsable" role="group" aria-label="Seleccionar responsable">
         <button type="button" class="responsable-btn" data-responsable="electrico">⚡ Eléctrico</button>
@@ -2132,8 +2134,8 @@ nav{z-index:40}
       const editando = pendienteEnEdicionId === p.id;
       return '<article class="pendiente-item" data-pendiente-id="' + esc(p.id) + '">' +
         (editando
-          ? '<div class="pendiente-edicion"><label for="editarPendienteTexto">Editar descripción y agregar información</label><textarea id="editarPendienteTexto" maxlength="2000">' + esc(p.descripcion) + '</textarea><div class="pendiente-edicion-ayuda">Conserva el texto existente y añade los nuevos antecedentes que se vayan recaudando.</div><div class="pendiente-controles"><button type="button" class="verde" data-pendiente-guardar-edicion>Guardar cambios</button><button type="button" class="sec" data-pendiente-cancelar-edicion>Cancelar</button></div></div>'
-          : '<div class="pendiente-descripcion">' + esc(p.descripcion) + '</div>') +
+          ? '<div class="pendiente-edicion"><label for="editarPendienteTitulo">Título del pendiente</label><input type="text" id="editarPendienteTitulo" maxlength="120" value="' + esc(p.titulo || p.descripcion.slice(0,120)) + '"><label for="editarPendienteTexto" style="display:block;margin-top:10px">Descripción y antecedentes</label><textarea id="editarPendienteTexto" maxlength="2000">' + esc(p.descripcion) + '</textarea><div class="pendiente-edicion-ayuda">Puedes actualizar el título y conservar o ampliar los antecedentes recopilados.</div><div class="pendiente-controles"><button type="button" class="verde" data-pendiente-guardar-edicion>Guardar cambios</button><button type="button" class="sec" data-pendiente-cancelar-edicion>Cancelar</button></div></div>'
+          : '<div class="pendiente-titulo">' + esc(p.titulo || p.descripcion.slice(0,120)) + '</div>' + (p.descripcion ? '<div class="pendiente-descripcion">' + esc(p.descripcion) + '</div>' : '')) +
         '<div class="pendiente-meta">Responsable: ' + esc(responsable) + '</div>' +
         '<div class="pendiente-meta">Registrado: ' + new Date(p.creado || Date.now()).toLocaleString("es-CL",{dateStyle:"medium",timeStyle:"short"}) + (p.actualizado && p.actualizado !== p.creado ? ' · Actualizado: ' + new Date(p.actualizado).toLocaleString("es-CL",{dateStyle:"medium",timeStyle:"short"}) : '') + '</div>' +
         '<div class="pendiente-controles"><div class="pendiente-estado-botones">' +
@@ -2142,13 +2144,15 @@ nav{z-index:40}
     }).join('');
   }
   $('btnGuardarPendiente').addEventListener('click', () => {
+    const titulo = $('pendienteTitulo').value.trim();
     const descripcion = $('pendienteTexto').value.trim();
     const msg = $('pendienteMsg');
-    if (!descripcion) { msg.className = 'msg error'; msg.textContent = 'Escribe la descripción del pendiente.'; $('pendienteTexto').focus(); return; }
+    if (!titulo) { msg.className = 'msg error'; msg.textContent = 'Escribe un título para identificar el pendiente.'; $('pendienteTitulo').focus(); return; }
+    if (!descripcion) { msg.className = 'msg error'; msg.textContent = 'Escribe la descripción o los antecedentes del pendiente.'; $('pendienteTexto').focus(); return; }
     if (!responsablePendienteSeleccionado) { msg.className = 'msg error'; msg.textContent = 'Selecciona un responsable: Eléctrico, Mecánico o Producción.'; return; }
-    pendientes.push({ id: uid(), descripcion, responsable: responsablePendienteSeleccionado, estado: 'pendiente', creado: Date.now(), actualizado: Date.now() });
+    pendientes.push({ id: uid(), titulo, descripcion, responsable: responsablePendienteSeleccionado, estado: 'pendiente', creado: Date.now(), actualizado: Date.now() });
     guardar(); renderPendientes(); renderReporte();
-    $('pendienteTexto').value = ''; responsablePendienteSeleccionado = ''; renderSeleccionResponsable();
+    $('pendienteTitulo').value = ''; $('pendienteTexto').value = ''; responsablePendienteSeleccionado = ''; renderSeleccionResponsable();
     msg.className = 'msg ok'; msg.textContent = '✓ Pendiente agregado y guardado.';
   });
   $('listaPendientes').addEventListener('click', e => {
@@ -2166,9 +2170,12 @@ nav{z-index:40}
     if (e.target.closest('button[data-pendiente-guardar-edicion]')) {
       if (!p) return;
       const editor = item.querySelector('#editarPendienteTexto');
+      const tituloEditor = item.querySelector('#editarPendienteTitulo');
+      const titulo = tituloEditor ? tituloEditor.value.trim() : '';
       const descripcion = editor ? editor.value.trim() : '';
+      if (!titulo) { alert('El título del pendiente no puede quedar vacío.'); if (tituloEditor) tituloEditor.focus(); return; }
       if (!descripcion) { alert('La descripción del pendiente no puede quedar vacía.'); if (editor) editor.focus(); return; }
-      p.descripcion = descripcion; p.actualizado = Date.now(); pendienteEnEdicionId = null;
+      p.titulo = titulo; p.descripcion = descripcion; p.actualizado = Date.now(); pendienteEnEdicionId = null;
       guardar(); renderPendientes(); renderReporte(); return;
     }
     const estadoBtn = e.target.closest('button[data-pendiente-estado]');
@@ -2196,7 +2203,8 @@ nav{z-index:40}
     const pendientesReporte = pendientes.length ? '\n\nPENDIENTES DEL TURNO ANTERIOR\n' + pendientes.map(p => {
       const estado = p.estado === 'en curso' ? 'EN CURSO' : p.estado === 'listo' ? 'LISTO' : 'PENDIENTE';
       const responsable = RESPONSABLES_PENDIENTE[p.responsable] || p.responsable || 'Sin asignar';
-      return '• [' + estado + '] ' + p.descripcion + ' | Responsable: ' + responsable;
+      const titulo = p.titulo || p.descripcion.slice(0,120);
+      return '• [' + estado + '] ' + titulo + (p.descripcion ? '\\n  Detalle: ' + p.descripcion : '') + ' | Responsable: ' + responsable;
     }).join('\n') : '';
     ultimo.texto += pendientesReporte;
     const r = ultimo.rango;
@@ -2282,6 +2290,13 @@ nav button span[data-lucide] svg{width:26px!important;height:26px!important;stro
 .pendiente-edicion-ayuda{font-size:11px;color:var(--muted);line-height:1.4;margin-top:6px}
 .pendiente-edicion .pendiente-controles{margin-top:10px}
 @media(max-width:520px){.pendiente-edicion .pendiente-controles button{flex:1}}
+</style>
+<style id="pendientes-titulo-v30">
+#v-pendientes .pendientes-editor input#pendienteTitulo,
+.pendiente-edicion input#editarPendienteTitulo{width:100%;min-height:44px;padding:10px 12px}
+.pendiente-titulo{font-size:15px;line-height:1.4;font-weight:800;color:var(--pri);margin-bottom:6px;overflow-wrap:anywhere}
+.pendiente-descripcion{font-weight:450;color:var(--txt)}
+.pendiente-edicion input#editarPendienteTitulo{margin-bottom:8px}
 </style>
 </body>
 </html>
