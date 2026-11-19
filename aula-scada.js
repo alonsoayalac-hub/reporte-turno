@@ -122,7 +122,54 @@ async function exportPdf(){
  rows.push('<section><h2>'+(i+1)+'. '+esc(c.title)+'</h2>'+(crop?'<img class="crop" src="'+crop+'">':'')+'<p>'+esc(c.content).replace(/\n/g,'<br>')+'</p></section>');}
  w.document.write('<!doctype html><html lang="es"><meta charset="utf-8"><title>Aula SCADA</title><style>body{font:14px Arial;color:#172338;margin:28px}h1{color:#1646a0}h2{font-size:17px;color:#1646a0}img.main{width:100%;max-height:65vh;object-fit:contain}img.crop{display:block;max-width:100%;max-height:230px}section{border-top:1px solid #ddd;padding:15px 0;page-break-inside:avoid}p{line-height:1.55;white-space:pre-wrap}@media print{body{margin:15mm}}</style><h1>Aula SCADA</h1><h2>'+esc(activeScreen.title)+'</h2><p>'+esc(activeScreen.area||'')+' · Material de capacitación</p><img class="main" src="'+main+'"><h2>Explicaciones</h2>'+rows.join('')+'<script>window.onload=()=>setTimeout(()=>window.print(),500)<\/script></html>');w.document.close();
 }
-async function downloadAll(){for(const c of comments)if(c.crop_path){try{downloadBlob(await signed(c.crop_path),(c.title||'recorte')+'.jpg');}catch(e){}}}
+function zipCrc32(bytes){
+ let crc=0xffffffff;
+ for(const byte of bytes){crc^=byte;for(let k=0;k<8;k++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}
+ return (crc^0xffffffff)>>>0;
+}
+function zip16(view,offset,value){view.setUint16(offset,value,true);}
+function zip32(view,offset,value){view.setUint32(offset,value>>>0,true);}
+function buildZip(files){
+ const encoder=new TextEncoder(),localParts=[],centralParts=[];let offset=0;
+ const now=new Date(),time=(now.getHours()<<11)|(now.getMinutes()<<5)|Math.floor(now.getSeconds()/2);
+ const date=((Math.max(1980,now.getFullYear())-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate();
+ for(const file of files){
+  const name=encoder.encode(file.name),data=file.bytes,crc=zipCrc32(data);
+  const local=new Uint8Array(30+name.length),lv=new DataView(local.buffer);
+  zip32(lv,0,0x04034b50);zip16(lv,4,20);zip16(lv,6,0x0800);zip16(lv,8,0);
+  zip16(lv,10,time);zip16(lv,12,date);zip32(lv,14,crc);zip32(lv,18,data.length);zip32(lv,22,data.length);
+  zip16(lv,26,name.length);zip16(lv,28,0);local.set(name,30);
+  localParts.push(local,data);
+  const central=new Uint8Array(46+name.length),cv=new DataView(central.buffer);
+  zip32(cv,0,0x02014b50);zip16(cv,4,20);zip16(cv,6,20);zip16(cv,8,0x0800);zip16(cv,10,0);
+  zip16(cv,12,time);zip16(cv,14,date);zip32(cv,16,crc);zip32(cv,20,data.length);zip32(cv,24,data.length);
+  zip16(cv,28,name.length);zip16(cv,30,0);zip16(cv,32,0);zip16(cv,34,0);zip16(cv,36,0);zip32(cv,38,0);zip32(cv,42,offset);
+  central.set(name,46);centralParts.push(central);offset+=local.length+data.length;
+ }
+ const centralSize=centralParts.reduce((sum,p)=>sum+p.length,0),end=new Uint8Array(22),ev=new DataView(end.buffer);
+ zip32(ev,0,0x06054b50);zip16(ev,4,0);zip16(ev,6,0);zip16(ev,8,files.length);zip16(ev,10,files.length);
+ zip32(ev,12,centralSize);zip32(ev,16,offset);zip16(ev,20,0);
+ return new Blob([...localParts,...centralParts,end],{type:'application/zip'});
+}
+async function downloadAll(){
+ const items=comments.filter(c=>c.crop_path);
+ if(!items.length){msg('Esta pantalla todavía no tiene recortes para descargar.',true);return;}
+ const button=$('scadaDownloadAll');button.disabled=true;msg('Preparando '+items.length+' recorte(s)…');
+ try{
+  const files=[],used=new Set();
+  for(const c of items){
+   const response=await fetch(await signed(c.crop_path));
+   if(!response.ok)throw new Error('No se pudo descargar el recorte: '+c.title);
+   const base=(c.title||'recorte').replace(/[\\/:*?"<>|]+/g,'-').trim()||'recorte';
+   let name=base+'.jpg',n=2;while(used.has(name.toLowerCase()))name=base+' ('+(n++)+').jpg';
+   used.add(name.toLowerCase());files.push({name,bytes:new Uint8Array(await response.arrayBuffer())});
+  }
+  const blob=buildZip(files),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='Aula-SCADA-recortes.zip';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),60000);msg('ZIP preparado con '+files.length+' recorte(s).');
+ }catch(e){msg('No se pudieron preparar los recortes: '+e.message,true);}
+ finally{button.disabled=false;}
+}
 function init(){
  $('scadaUploadBtn').onclick=uploadScreen;
  $('scadaDrawMode').onclick=()=>{$('scadaDrawMode').classList.toggle('active');msg($('scadaDrawMode').classList.contains('active')?'Arrastra para marcar una zona.':'Selección desactivada.');};
