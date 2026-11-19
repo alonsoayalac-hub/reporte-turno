@@ -699,7 +699,7 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
 .estado-pendiente.en-curso{background:color-mix(in srgb,var(--pri) 12%,var(--card));color:var(--pri)}
 .estado-pendiente.listo{background:color-mix(in srgb,var(--verde) 13%,var(--card));color:var(--verde)}
 @media(max-width:900px){#v-pendientes.activa{display:block}}
-@media(min-width:760px){nav{grid-template-columns:repeat(6,1fr)}}
+@media(min-width:760px){nav{grid-template-columns:repeat(7,1fr)}}
 </style>
 
 
@@ -1242,7 +1242,29 @@ nav{z-index:40}
       <input type="search" id="buscarReunion" placeholder="Buscar por título o contenido..." style="margin-bottom:12px">
       <div id="listaReuniones"></div>
     </div>
+  <!-- AULA SCADA -->
+  <section id="v-scada">
+    <div class="card scada-head"><div><h2>Aula SCADA</h2><p>Biblioteca visual para aprender a interpretar las pantallas de control de planta.</p></div><span class="scada-role" id="scadaRole">Consultando permisos…</span></div>
+    <div class="scada-library" id="scadaLibrary">
+      <div class="card"><h2>Pantallas de capacitación</h2><div id="scadaScreenList"><div class="scada-empty">Cargando biblioteca…</div></div></div>
+      <div class="card" data-scada-editor hidden><h2>Agregar pantalla</h2><div class="scada-form-grid">
+        <div class="full"><label for="scadaUploadTitle">Nombre de la pantalla</label><input id="scadaUploadTitle" type="text" placeholder="Ej. U.R.F."></div>
+        <div class="full"><label for="scadaUploadArea">Área de planta</label><input id="scadaUploadArea" type="text" placeholder="Ej. Concentradora"></div>
+        <div class="full"><label for="scadaUploadDescription">Descripción</label><textarea id="scadaUploadDescription" placeholder="Breve descripción del proceso o pantalla"></textarea></div>
+        <div class="full"><label for="scadaUploadFile">Imagen de la pantalla</label><input id="scadaUploadFile" type="file" accept="image/*"></div>
+        <div class="full"><button id="scadaUploadBtn" type="button" class="verde">＋ Agregar a la biblioteca</button></div>
+      </div></div>
+    </div>
+    <div id="scadaWorkspace" hidden><div class="card">
+      <div class="scada-work-head"><div><h2 id="scadaScreenTitle">Pantalla</h2><p id="scadaScreenDescription" class="muted"></p></div><button class="sec" id="scadaBackToLibrary" type="button">← Biblioteca</button></div>
+      <div class="scada-toolbar"><button id="scadaDrawMode" class="sec" type="button" data-scada-editor hidden>＋ Marcar zona</button><button id="scadaExportPdf" class="sec" type="button">Descargar PDF</button><button id="scadaDownloadAll" class="sec" type="button">Descargar recortes</button><label class="scada-zoom">Zoom <input id="scadaZoom" type="range" min="1" max="2.5" step=".1" value="1"><b id="scadaZoomValue">100%</b></label></div>
+      <p class="scada-draw-help" id="scadaDrawHelp"></p><div class="scada-image-viewport" id="scadaImageStage"></div>
+      <div id="scadaCommentForm" class="scada-comment-form" hidden><h3 id="scadaCommentFormTitle">Nueva explicación</h3><label for="scadaCommentTitle">Título</label><input id="scadaCommentTitle" type="text" placeholder="Ej. Indicador de nivel"><label for="scadaCommentContent">Explicación para capacitación</label><textarea id="scadaCommentContent" placeholder="Explica qué representa este elemento, cómo se interpreta y qué debe aprender el operador..."></textarea><input id="scadaRect" type="hidden"><div class="scada-actions"><button id="scadaSaveComment" type="button" class="verde">Guardar explicación</button><button id="scadaCancelComment" type="button" class="sec">Cancelar</button></div></div>
+      <div id="scadaDetail" class="scada-detail" hidden><div class="scada-work-head"><h3 id="scadaDetailTitle"></h3><button id="scadaCloseDetail" type="button" class="mini">✕</button></div><div id="scadaDetailCrop"></div><p id="scadaDetailBody"></p><div class="scada-actions"><button id="scadaDownloadCrop" class="sec" type="button">Descargar recorte</button><button id="scadaEditComment" class="sec" type="button" hidden>Editar</button><button id="scadaDeleteComment" class="peligro" type="button" hidden>Eliminar</button></div></div>
+    </div><div class="card"><h2>Explicaciones de esta pantalla</h2><div id="scadaCommentList"></div></div></div>
+    <div id="scadaMsg" class="scada-msg" role="status" aria-live="polite"></div>
   </section>
+
 </main>
 
 <nav>
@@ -1252,6 +1274,7 @@ nav{z-index:40}
   <button data-tab="reporte"><span data-lucide="file-text"></span>Reporte</button>
   <button data-tab="reuniones"><span data-lucide="notebook-pen"></span>Apuntes</button>
   <button data-tab="pendientes"><span data-lucide="clipboard-check"></span>Pendientes</button>
+  <button data-tab="scada"><span data-lucide="monitor"></span>Aula SCADA</button>
 </nav>
 
 
@@ -1329,6 +1352,8 @@ nav{z-index:40}
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true }
   });
+  window.appSupabase = supabaseClient;
+  window.appCurrentUser = () => usuarioActual;
   let areas = [], eventos = [], reuniones = [], pendientes = [];
   let usuarioActual = null, guardadoPendiente = null, cargandoDatos = false;
   let ultimaActualizacionNube = 0, ultimoCambioLocal = 0, intervaloSync = null;
@@ -1645,7 +1670,7 @@ nav{z-index:40}
   }
 
   // ---------- Pestañas ----------
-  const TITULOS = { areas: 'Inicio', evento: 'Nuevo evento', historial: 'Historial', reporte: 'Reporte de turno', reuniones: 'Apuntes de reunión', pendientes: 'Pendientes del turno anterior' };
+  const TITULOS = { areas: 'Inicio', evento: 'Nuevo evento', historial: 'Historial', reporte: 'Reporte de turno', reuniones: 'Apuntes de reunión', pendientes: 'Pendientes del turno anterior', scada: 'Aula SCADA' };
   function mostrar(tab) {
     document.querySelectorAll('section').forEach((s) => s.classList.toggle('activa', s.id === 'v-' + tab));
     document.querySelectorAll('nav button').forEach((b) => b.classList.toggle('activo', b.dataset.tab === tab));
@@ -1656,6 +1681,7 @@ nav{z-index:40}
     if (tab === 'reporte') renderReporte();
     if (tab === 'reuniones') renderReuniones();
     if (tab === 'pendientes') renderPendientes();
+    if (tab === 'scada') window.AulaScada?.open();
     window.scrollTo(0, 0);
   }
   document.querySelectorAll('nav button').forEach((b) => b.addEventListener('click', () => mostrar(b.dataset.tab)));
@@ -2298,5 +2324,7 @@ nav button span[data-lucide] svg{width:26px!important;height:26px!important;stro
 .pendiente-descripcion{font-weight:450;color:var(--txt)}
 .pendiente-edicion input#editarPendienteTitulo{margin-bottom:8px}
 </style>
+<link rel="stylesheet" href="aula-scada.css">
+<script src="aula-scada.js"></script>
 </body>
 </html>
