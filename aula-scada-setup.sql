@@ -19,5 +19,21 @@ drop policy if exists "Aula images read" on storage.objects;create policy "Aula 
 drop policy if exists "Aula images insert" on storage.objects;create policy "Aula images insert" on storage.objects for insert to authenticated with check(bucket_id='aula-scada' and exists(select 1 from public.aula_scada_members m where m.user_id=auth.uid() and m.role in('editor','admin')));
 drop policy if exists "Aula images update" on storage.objects;create policy "Aula images update" on storage.objects for update to authenticated using(bucket_id='aula-scada' and exists(select 1 from public.aula_scada_members m where m.user_id=auth.uid() and m.role in('editor','admin'))) with check(bucket_id='aula-scada' and exists(select 1 from public.aula_scada_members m where m.user_id=auth.uid() and m.role in('editor','admin')));
 drop policy if exists "Aula images delete" on storage.objects;create policy "Aula images delete" on storage.objects for delete to authenticated using(bucket_id='aula-scada' and exists(select 1 from public.aula_scada_members m where m.user_id=auth.uid() and m.role in('editor','admin')));
--- Primer administrador: reemplaza el correo por el de tu cuenta registrada.
--- insert into public.aula_scada_members(user_id,role) select id,'admin' from auth.users where email='TU_CORREO@EMPRESA.CL' on conflict(user_id) do update set role=excluded.role;
+-- Primer administrador: cuenta indicada por el propietario del proyecto.
+do $
+declare
+  admin_user_id uuid;
+begin
+  select id into admin_user_id
+  from auth.users
+  where lower(email) = lower('alonso.ayala@polpaicosoluciones.cl')
+  limit 1;
+
+  if admin_user_id is null then
+    raise exception 'No existe una cuenta registrada con alonso.ayala@polpaicosoluciones.cl. Inicia sesión/crea la cuenta y vuelve a ejecutar este bloque.';
+  end if;
+
+  insert into public.aula_scada_members(user_id, role)
+  values (admin_user_id, 'admin')
+  on conflict (user_id) do update set role = excluded.role;
+end $;
