@@ -32,7 +32,7 @@ async function openScreen(id){
  }catch(e){msg('No se pudo abrir la pantalla: '+e.message,true);}
 }
 function renderImage(){
- $('scadaImageStage').innerHTML='<div class="scada-image-wrap" id="scadaImageWrap" style="width:'+Math.round(zoom*100)+'%"><img id="scadaMainImage" src="'+imageUrl+'" alt=""><div class="scada-overlay" id="scadaOverlay"></div></div>';
+ $('scadaImageStage').innerHTML='<div class="scada-image-wrap" id="scadaImageWrap" style="width:'+Math.round(zoom*100)+'%"><img id="scadaMainImage" crossorigin="anonymous" src="'+imageUrl+'" alt=""><div class="scada-overlay" id="scadaOverlay"></div></div>';
  imageElement=$('scadaMainImage');imageElement.onload=drawMarkers;
  $('scadaZoom').value=zoom;$('scadaZoomValue').textContent=Math.round(zoom*100)+'%';
  $('scadaDrawHelp').textContent=editor?'Activa “Marcar zona” y arrastra sobre la imagen para crear una ficha.':'Selecciona un marcador para estudiar su explicación.';
