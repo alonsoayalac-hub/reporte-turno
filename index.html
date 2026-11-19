@@ -699,7 +699,7 @@ body.auth-locked>header,body.auth-locked>main,body.auth-locked>nav,body.auth-loc
 .estado-pendiente.en-curso{background:color-mix(in srgb,var(--pri) 12%,var(--card));color:var(--pri)}
 .estado-pendiente.listo{background:color-mix(in srgb,var(--verde) 13%,var(--card));color:var(--verde)}
 @media(max-width:900px){#v-pendientes.activa{display:block}}
-@media(min-width:760px){nav{grid-template-columns:repeat(6,1fr)}}
+@media(min-width:760px){nav{grid-template-columns:repeat(7,1fr)}}
 </style>
 
 
@@ -848,7 +848,7 @@ nav{z-index:40}
   nav{
     left:50%!important;right:auto!important;transform:translateX(-50%)!important;
     bottom:14px!important;width:min(720px,calc(100% - 48px))!important;
-    grid-template-columns:repeat(6,minmax(0,1fr))!important;
+    grid-template-columns:repeat(7,minmax(0,1fr))!important;
     padding:8px!important;border:1px solid var(--borde)!important;
     border-radius:18px!important;background:color-mix(in srgb,var(--card) 94%,transparent)!important;
     box-shadow:0 10px 34px rgba(20,42,75,.13)!important;
@@ -872,7 +872,7 @@ nav{z-index:40}
   #v-evento.activa,#v-reporte.activa,#v-pendientes.activa,#v-reuniones.activa,#v-historial.activa{display:block!important}
   #v-pendientes>.card,#v-reuniones>.card{margin-bottom:14px!important}
   #historial>.card{margin-bottom:14px!important}
-  nav{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+  nav{grid-template-columns:repeat(7,minmax(0,1fr))!important}
 }
 @media(max-width:700px){
   main{width:100%!important;padding:14px 14px calc(env(safe-area-inset-bottom) + 100px)!important}
@@ -906,10 +906,10 @@ nav{z-index:40}
   nav{
     left:0!important;right:0!important;bottom:0!important;transform:none!important;
     width:100%!important;border-radius:0!important;border-left:0!important;border-right:0!important;
-    grid-template-columns:repeat(6,minmax(0,1fr))!important;
+    grid-template-columns:repeat(7,minmax(0,1fr))!important;
     padding:6px 4px calc(env(safe-area-inset-bottom) + 4px)!important;
   }
-  nav button{min-width:0;min-height:53px;padding:4px 1px;font-size:9px!important;white-space:nowrap}
+  nav button{min-width:0;min-height:53px;padding:4px 1px;font-size:8.5px!important;line-height:1.1;white-space:normal;overflow-wrap:anywhere}
   nav button span{font-size:19px}
   .backup-modal{padding:8px}
   .backup-caja{max-height:94vh;padding:16px}
@@ -1243,6 +1243,30 @@ nav{z-index:40}
       <div id="listaReuniones"></div>
     </div>
   </section>
+
+  <!-- AULA SCADA -->
+  <section id="v-scada">
+    <div class="card scada-head"><div><h2>Aula SCADA</h2><p>Biblioteca visual para aprender a interpretar las pantallas de control de planta.</p></div><span class="scada-role" id="scadaRole">Consultando permisos…</span></div>
+    <div class="scada-library" id="scadaLibrary">
+      <div class="card"><h2>Pantallas de capacitación</h2><div id="scadaScreenList"><div class="scada-empty">Cargando biblioteca…</div></div></div>
+      <div class="card" data-scada-editor hidden><h2>Agregar pantalla</h2><div class="scada-form-grid">
+        <div class="full"><label for="scadaUploadTitle">Nombre de la pantalla</label><input id="scadaUploadTitle" type="text" placeholder="Ej. U.R.F."></div>
+        <div class="full"><label for="scadaUploadArea">Área de planta</label><input id="scadaUploadArea" type="text" placeholder="Ej. Concentradora"></div>
+        <div class="full"><label for="scadaUploadDescription">Descripción</label><textarea id="scadaUploadDescription" placeholder="Breve descripción del proceso o pantalla"></textarea></div>
+        <div class="full"><label for="scadaUploadFile">Imagen de la pantalla</label><input id="scadaUploadFile" type="file" accept="image/*"></div>
+        <div class="full"><button id="scadaUploadBtn" type="button" class="verde">＋ Agregar a la biblioteca</button></div>
+      </div></div>
+    </div>
+    <div id="scadaWorkspace" hidden><div class="card">
+      <div class="scada-work-head"><div><h2 id="scadaScreenTitle">Pantalla</h2><p id="scadaScreenDescription" class="muted"></p></div><button class="sec" id="scadaBackToLibrary" type="button">← Biblioteca</button></div>
+      <div class="scada-toolbar"><button id="scadaDrawMode" class="sec" type="button" data-scada-editor hidden>＋ Marcar zona</button><button id="scadaExportPdf" class="sec" type="button">Descargar PDF</button><button id="scadaDownloadAll" class="sec" type="button">Descargar recortes</button><label class="scada-zoom">Zoom <input id="scadaZoom" type="range" min="1" max="2.5" step=".1" value="1"><b id="scadaZoomValue">100%</b></label></div>
+      <p class="scada-draw-help" id="scadaDrawHelp"></p><div class="scada-image-viewport" id="scadaImageStage"></div>
+      <div id="scadaCommentForm" class="scada-comment-form" hidden><h3 id="scadaCommentFormTitle">Nueva explicación</h3><label for="scadaCommentTitle">Título</label><input id="scadaCommentTitle" type="text" placeholder="Ej. Indicador de nivel"><label for="scadaCommentContent">Explicación para capacitación</label><textarea id="scadaCommentContent" placeholder="Explica qué representa este elemento, cómo se interpreta y qué debe aprender el operador..."></textarea><input id="scadaRect" type="hidden"><div class="scada-actions"><button id="scadaSaveComment" type="button" class="verde">Guardar explicación</button><button id="scadaCancelComment" type="button" class="sec">Cancelar</button></div></div>
+      <div id="scadaDetail" class="scada-detail" hidden><div class="scada-work-head"><h3 id="scadaDetailTitle"></h3><button id="scadaCloseDetail" type="button" class="mini">✕</button></div><div id="scadaDetailCrop"></div><p id="scadaDetailBody"></p><div class="scada-actions"><button id="scadaDownloadCrop" class="sec" type="button">Descargar recorte</button><button id="scadaEditComment" class="sec" type="button" hidden>Editar</button><button id="scadaDeleteComment" class="peligro" type="button" hidden>Eliminar</button></div></div>
+    </div><div class="card"><h2>Explicaciones de esta pantalla</h2><div id="scadaCommentList"></div></div></div>
+    <div id="scadaMsg" class="scada-msg" role="status" aria-live="polite"></div>
+  </section>
+
 </main>
 
 <nav>
@@ -1252,6 +1276,7 @@ nav{z-index:40}
   <button data-tab="reporte"><span data-lucide="file-text"></span>Reporte</button>
   <button data-tab="reuniones"><span data-lucide="notebook-pen"></span>Apuntes</button>
   <button data-tab="pendientes"><span data-lucide="clipboard-check"></span>Pendientes</button>
+  <button data-tab="scada"><span data-lucide="monitor"></span>Aula SCADA</button>
 </nav>
 
 
@@ -1305,6 +1330,7 @@ nav{z-index:40}
     "cloud-upload": '<path d="M20 16.2A4.5 4.5 0 0 0 18 7.5h-1.2A6 6 0 1 0 5 16"/><path d="M12 12v9m-4-5 4-4 4 4"/>',
     "notebook-pen": '<path d="M12 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8"/><path d="M8 6h4M8 10h4M8 14h2"/><path d="m16 18 4-4 2 2-4 4-3 1Z"/>',
     "house": '<path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9M9 20v-6h6v6"/>',
+    "monitor": '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>',
     "calendar-days": '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18M8 15h.01M12 15h.01M16 15h.01M8 18h.01M12 18h.01"/>',
     "pencil": '<path d="m16 4 4 4M4 20l4-.8L19 8a2.1 2.1 0 0 0-3-3L5 16Z"/>',
     "copy": '<rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',
@@ -1329,6 +1355,8 @@ nav{z-index:40}
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true }
   });
+  window.appSupabase = supabaseClient;
+  window.appCurrentUser = () => usuarioActual;
   let areas = [], eventos = [], reuniones = [], pendientes = [];
   let usuarioActual = null, guardadoPendiente = null, cargandoDatos = false;
   let ultimaActualizacionNube = 0, ultimoCambioLocal = 0, intervaloSync = null;
@@ -1645,7 +1673,7 @@ nav{z-index:40}
   }
 
   // ---------- Pestañas ----------
-  const TITULOS = { areas: 'Inicio', evento: 'Nuevo evento', historial: 'Historial', reporte: 'Reporte de turno', reuniones: 'Apuntes de reunión', pendientes: 'Pendientes del turno anterior' };
+  const TITULOS = { areas: 'Inicio', evento: 'Nuevo evento', historial: 'Historial', reporte: 'Reporte de turno', reuniones: 'Apuntes de reunión', pendientes: 'Pendientes del turno anterior', scada: 'Aula SCADA' };
   function mostrar(tab) {
     document.querySelectorAll('section').forEach((s) => s.classList.toggle('activa', s.id === 'v-' + tab));
     document.querySelectorAll('nav button').forEach((b) => b.classList.toggle('activo', b.dataset.tab === tab));
@@ -1656,6 +1684,7 @@ nav{z-index:40}
     if (tab === 'reporte') renderReporte();
     if (tab === 'reuniones') renderReuniones();
     if (tab === 'pendientes') renderPendientes();
+    if (tab === 'scada') window.AulaScada?.open();
     window.scrollTo(0, 0);
   }
   document.querySelectorAll('nav button').forEach((b) => b.addEventListener('click', () => mostrar(b.dataset.tab)));
@@ -2298,5 +2327,7 @@ nav button span[data-lucide] svg{width:26px!important;height:26px!important;stro
 .pendiente-descripcion{font-weight:450;color:var(--txt)}
 .pendiente-edicion input#editarPendienteTitulo{margin-bottom:8px}
 </style>
+<link rel="stylesheet" href="aula-scada.css">
+<script src="aula-scada.js"></script>
 </body>
 </html>

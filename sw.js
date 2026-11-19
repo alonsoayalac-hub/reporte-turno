@@ -1,10 +1,13 @@
 /* Service worker: permite abrir la app sin internet después de la primera carga. */
-const CACHE = 'reporte-turno-v30';
+const CACHE = 'reporte-turno-v31';
 const ARCHIVOS = [
   './',
   './index.html',
   './logica.js',
   './abb-import.js',
+  './aula-scada.js',
+  './aula-scada.css',
+  './aula-scada-setup.sql',
   './manifest.webmanifest',
   './icon-180.png',
   './icon-192.png',
